@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Voting Rules')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="rv-page" style="max-width:1100px">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a th:href="@{/compliance/dashboard}" class="btn btn-sm btn-outline-dark">
+            <i class="fa-solid fa-arrow-left"></i> Dashboard
+        </a>
+        <h2 class="rv-page-title mb-0">
+            <i class="fa-solid fa-sliders"></i> Voting Rules — Read-Only View
+        </h2>
+    </div>
+
+    <div class="rv-card mb-4" style="border-left:3px solid var(--rv-cyan);">
+        <p class="mb-0 small text-muted">
+            <i class="fa-solid fa-lock"></i>
+            <strong style="color:var(--rv-cyan)">Read-only.</strong>
+            Session rules (timing, status) are configured by Administrators in the Admin panel.
+            If a rule change is needed, raise a <a th:href="@{/compliance/alerts/new}">Security Alert</a>.
+        </p>
+    </div>
+
+    <div class="rv-card text-center py-5" th:if="${#lists.isEmpty(sessions)}">
+        <p class="text-muted mb-0">No voting sessions found.</p>
+    </div>
+
+    <div class="rv-card p-0" th:unless="${#lists.isEmpty(sessions)}">
+        <table class="table mb-0">
+            <thead>
+            <tr>
+                <th>Session</th>
+                <th>Status</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Contestants</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="s : ${sessions}">
+                <td class="rv-mono small text-muted"
+                    th:text="'#' + ${s.id}"></td>
+                <td>
+                    <span class="status-badge"
+                          th:classappend="${s.status.name() == 'OPEN'} ? 'status-ACTIVE' : (${s.status.name() == 'CLOSED'} ? 'status-ELIMINATED' : 'status-ARCHIVED')"
+                          th:text="${s.status}"></span>
+                </td>
+                <td class="small" th:text="${s.startTime}"></td>
+                <td class="small" th:text="${s.endTime}"></td>
+                <td class="rv-mono" th:text="${s.contestants.size()}"></td>
+                <td>
+                    <div class="d-flex gap-1">
+                        <a class="btn btn-sm btn-outline-dark"
+                           th:href="@{/compliance/verify/{id}(id=${s.id})}"
+                           title="Verify Integrity">
+                            <i class="fa-solid fa-check-double"></i>
+                        </a>
+                        <a class="btn btn-sm btn-outline-dark"
+                           th:href="@{/compliance/activity(sessionId=${s.id})}"
+                           title="Vote Activity">
+                            <i class="fa-solid fa-chart-column"></i>
+                        </a>
+                        <a class="btn btn-sm btn-outline-dark"
+                           th:href="@{/compliance/alerts/new(sessionId=${s.id})}"
+                           title="Raise Alert for this session">
+                            <i class="fa-solid fa-bell"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

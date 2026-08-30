@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Fraud Report Detail')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="rv-page" style="max-width:800px">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a th:href="@{/compliance/fraud-reports}" class="btn btn-sm btn-outline-dark">
+            <i class="fa-solid fa-arrow-left"></i> Reports
+        </a>
+        <h2 class="rv-page-title mb-0">
+            <i class="fa-solid fa-magnifying-glass-chart"></i>
+            Fraud Report #<span th:text="${report.id}"></span>
+        </h2>
+        <span class="status-badge"
+              th:classappend="${report.status.name() == 'DRAFT'} ? 'status-ARCHIVED' : 'status-ACTIVE'"
+              th:text="${report.status}"></span>
+    </div>
+
+    <div class="alert alert-info" th:if="${flash}" th:text="${flash}"></div>
+
+    <div class="rv-card mb-3">
+        <table class="table table-sm mb-0" style="font-size:.85rem;">
+            <tr><th style="color:var(--rv-text-muted);width:170px">Session</th>
+                <td th:text="${report.sessionDescription}"></td></tr>
+            <tr><th style="color:var(--rv-text-muted)">Flagged Events</th>
+                <td class="rv-mono" th:text="${report.totalFlaggedEvents}"></td></tr>
+            <tr><th style="color:var(--rv-text-muted)">Suspicious Actors</th>
+                <td class="rv-mono small" th:text="${report.suspiciousActors}"></td></tr>
+            <tr><th style="color:var(--rv-text-muted)">Raised by</th>
+                <td th:text="${report.raisedByEmail}"></td></tr>
+            <tr><th style="color:var(--rv-text-muted)">Created</th>
+                <td th:text="${report.createdDate}"></td></tr>
+        </table>
+    </div>
+
+    <div class="rv-card mb-3">
+        <div class="text-muted small mb-2">Detected Patterns</div>
+        <pre style="color:#e4e7ef;font-size:.8rem;white-space:pre-wrap;"
+             th:text="${report.detectedPatterns}"></pre>
+    </div>
+
+    <div class="rv-card mb-4">
+        <div class="text-muted small mb-2">Officer Summary</div>
+        <div style="white-space:pre-wrap;line-height:1.6;margin-bottom:1rem;"
+             th:text="${report.summary}"></div>
+        <form method="post"
+              th:action="@{/compliance/fraud-reports/{id}/summary(id=${report.id})}"
+              th:if="${report.status.name() != 'RESOLVED'}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-9">
+                    <textarea class="form-control" rows="3" name="summary"
+                              placeholder="Update narrative summary..."></textarea>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-dark w-100" type="submit">
+                        Save Summary
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="d-flex gap-2">
+        <form method="post"
+              th:action="@{/compliance/fraud-reports/{id}/advance(id=${report.id})}"
+              th:if="${report.status.name() != 'RESOLVED'}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="btn btn-accent" type="submit">
+                <i class="fa-solid fa-arrow-right"></i>
+                Advance to
+                <span th:switch="${report.status.name()}">
+                    <span th:case="'DRAFT'">FILED</span>
+                    <span th:case="'FILED'">UNDER REVIEW</span>
+                    <span th:case="'UNDER_REVIEW'">RESOLVED</span>
+                </span>
+            </button>
+        </form>
+        <a class="btn btn-sm btn-outline-dark"
+           th:href="@{/compliance/anomalies(sessionId=${report.sessionId})}">
+            <i class="fa-solid fa-bug"></i> Re-run Anomaly Detection
+        </a>
+    </div>
+</div>
+</body>
+</html>

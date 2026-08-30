@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Manage Shows')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="rv-page-title"><i class="fa-solid fa-tv"></i> Reality Show Management</h2>
+        <a class="btn btn-accent" th:href="@{/admin/shows/new}">
+            <i class="fa-solid fa-plus"></i> Create Show
+        </a>
+    </div>
+
+    <!-- Flash messages -->
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <!-- Search -->
+    <form class="rv-card mb-4 d-flex gap-2" method="get" th:action="@{/admin/shows}">
+        <input type="text" name="keyword" class="form-control" placeholder="Search shows by name..."
+               th:value="${keyword}">
+        <button class="btn btn-outline-dark" type="submit"><i class="fa-solid fa-search"></i></button>
+    </form>
+
+    <!-- Empty state -->
+    <div class="rv-card text-center py-5" th:if="${#lists.isEmpty(shows)}">
+        <i class="fa-solid fa-clapperboard fa-2x mb-3" style="color:#4a4d58"></i>
+        <p class="text-muted mb-0">No reality shows yet. Create your first one to get started.</p>
+    </div>
+
+    <!-- Show list -->
+    <div th:each="show : ${shows}" class="show-card d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <img th:if="${show.posterImagePath}" th:src="@{'/uploads/' + ${show.posterImagePath}}" alt="Poster"
+                 class="rv-show-thumb">
+            <div class="rv-show-thumb rv-show-thumb-empty" th:unless="${show.posterImagePath}">
+                <i class="fa-solid fa-clapperboard"></i>
+            </div>
+            <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h5 class="mb-0" th:text="${show.name}">Show Name</h5>
+                <span class="status-badge" th:classappend="'status-' + ${show.status}" th:text="${show.status}">STATUS</span>
+            </div>
+            <p class="text-muted mb-1" th:text="${show.category}">Category</p>
+            <small class="text-muted">
+                <i class="fa-regular fa-calendar"></i>
+                <span th:text="${show.startDate}">start</span> &rarr; <span th:text="${show.endDate}">end</span>
+                &nbsp;|&nbsp; <span th:text="${#lists.size(show.seasons)}">0</span> season(s)
+            </small>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-secondary" th:href="@{'/admin/shows/' + ${show.id}}">View</a>
+            <a class="btn btn-sm btn-outline-primary" th:href="@{'/admin/shows/' + ${show.id} + '/edit'}">Edit</a>
+            <form th:action="@{'/admin/shows/' + ${show.id} + '/delete'}" method="post"
+                  onsubmit="return confirm('Archive this show? This can be reversed by an admin later.');">
+                <button class="btn btn-sm btn-outline-danger" type="submit">Archive</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Integrity Verification')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:750px">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a th:href="@{/compliance/dashboard}" class="btn btn-sm btn-outline-dark">
+            <i class="fa-solid fa-arrow-left"></i> Dashboard
+        </a>
+        <h2 class="rv-page-title mb-0">
+            <i class="fa-solid fa-check-double"></i> Vote Integrity Verification
+        </h2>
+    </div>
+
+    <div class="rv-card mb-4" th:if="${integrity}">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <div class="text-muted small">Session</div>
+                <div class="rv-mono fw-bold" th:text="${integrity.sessionDescription}"></div>
+            </div>
+            <span class="status-badge"
+                  th:classappend="${integrity.integrityStatus == 'OK'} ? 'status-ACTIVE' :
+                                  (${integrity.integrityStatus == 'WARNING'} ? 'status-SCHEDULED' : 'status-ELIMINATED')"
+                  th:text="${integrity.integrityStatus}">
+            </span>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="rv-card text-center">
+                    <div class="rv-mono fw-bold" style="color:var(--rv-cyan);font-size:2rem;" th:text="${integrity.storedVoteCount}">0</div>
+                    <small class="text-muted">Stored Vote Count</small>
+                    <div class="text-muted small">(Vote table)</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="rv-card text-center">
+                    <div class="rv-mono fw-bold" style="font-size:2rem;"
+                         th:style="'font-size:2rem;color:' + (${integrity.countsMatch} ? 'var(--rv-cyan)' : '#ff5c72')"
+                         th:text="${integrity.auditedVoteCount}">0</div>
+                    <small class="text-muted">Audited Vote Count</small>
+                    <div class="text-muted small">(Audit log)</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="rv-card text-center">
+                    <div class="rv-mono fw-bold"
+                         th:style="'font-size:2rem;' + (${integrity.rejectedVoteCount > 0} ? 'color:#ff5c72' : 'color:var(--rv-cyan)')"
+                         th:text="${integrity.rejectedVoteCount}">0</div>
+                    <small class="text-muted">Rejected Votes</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success" th:if="${integrity.countsMatch}">
+            <i class="fa-solid fa-circle-check"></i>
+            <strong>Counts match.</strong> The Vote table and audit log are in agreement.
+            No integrity issues detected for this session.
+        </div>
+        <div class="alert alert-warning" th:unless="${integrity.countsMatch}">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <strong>Count mismatch detected!</strong>
+            Stored: <span class="rv-mono" th:text="${integrity.storedVoteCount}"></span> &nbsp;|&nbsp;
+            Audited: <span class="rv-mono" th:text="${integrity.auditedVoteCount}"></span>.
+            This may indicate a race condition or a data issue. Review the audit log immediately.
+        </div>
+    </div>
+
+    <!-- Session list for quick navigation -->
+    <div class="rv-card">
+        <h5 class="rv-page-title mb-3">Verify Another Session</h5>
+        <div class="d-flex flex-wrap gap-2">
+            <a th:each="s : ${sessions}"
+               class="btn btn-sm btn-outline-dark"
+               th:href="@{/compliance/verify/{id}(id=${s.id})}"
+               th:text="'#' + ${s.id} + ' ' + ${s.status}"></a>
+        </div>
+    </div>
+
+    <div class="mt-3 text-end">
+        <a class="btn btn-sm btn-outline-dark"
+           th:if="${integrity}"
+           th:href="@{/compliance/reports/{id}(id=${integrity.sessionId})}">
+            <i class="fa-solid fa-file-alt"></i> Generate Full Report
+        </a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Audit Logs')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:1100px">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <a th:href="@{/compliance/dashboard}" class="btn btn-sm btn-outline-dark">
+                <i class="fa-solid fa-arrow-left"></i> Dashboard
+            </a>
+            <h2 class="rv-page-title mb-0">
+                <i class="fa-solid fa-shield-halved"></i> Audit &amp; Compliance
+            </h2>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="status-badge status-ELIMINATED" th:if="${flaggedCount > 0}">
+                <i class="fa-solid fa-triangle-exclamation"></i> <span th:text="${flaggedCount}"></span> flagged
+            </span>
+            <a class="btn btn-sm btn-outline-dark"
+               th:href="@{/compliance/audit-logs/export(keyword=${keyword},flaggedOnly=${flaggedOnly})}">
+                <i class="fa-solid fa-file-csv"></i> Export CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Flash message from purge -->
+    <div class="alert alert-info" th:if="${purgeMessage}" th:text="${purgeMessage}"></div>
+
+    <form class="rv-card mb-4 row g-2 align-items-end" method="get" th:action="@{/compliance/audit-logs}">
+        <div class="col-md-3">
+            <label class="form-label mb-1">Actor email contains</label>
+            <input type="text" name="keyword" class="form-control" th:value="${keyword}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label mb-1">Event Type</label>
+            <select name="eventType" class="form-select">
+                <option value="">All Types</option>
+                <option th:each="et : ${eventTypes}" th:value="${et}" th:text="${et}"
+                        th:selected="${eventType != null and eventType == et}"></option>
+            </select>
+        </div>
+        <div class="col-md-3 form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="flaggedOnly" value="true" id="flaggedOnly"
+                   th:checked="${flaggedOnly}">
+            <label class="form-check-label" for="flaggedOnly">Flagged only</label>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-outline-dark w-100" type="submit">Apply</button>
+        </div>
+    </form>
+
+    <div class="rv-card text-center py-5" th:if="${logPage.totalElements == 0}">
+        <p class="text-muted mb-0">No audit events match this filter.</p>
+    </div>
+
+    <div class="rv-card p-0" th:unless="${logPage.totalElements == 0}">
+        <table class="table mb-0">
+            <thead>
+            <tr>
+                <th>Time</th>
+                <th>Event</th>
+                <th>Actor</th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="log : ${logPage.content}" th:classappend="${log.flagged} ? 'table-danger'">
+                <td class="text-nowrap small text-muted" th:text="${log.createdDate}"></td>
+                <td>
+                    <span class="status-badge"
+                          th:classappend="${log.eventType.name() == 'VOTE_CAST' or log.eventType.name() == 'LOGIN_SUCCESS' or log.eventType.name() == 'SESSION_OPENED'} ? 'status-ACTIVE' : (${log.eventType.name() == 'SUSPICIOUS_ACTIVITY'} ? 'status-ELIMINATED' : 'status-ARCHIVED')"
+                          th:text="${log.eventType}"></span>
+                </td>
+                <td th:text="${log.actorEmail}"></td>
+                <td th:text="${log.description}"></td>
+                <td>
+                    <a class="btn btn-sm btn-outline-dark"
+                       th:href="@{/compliance/audit-logs/{id}(id=${log.id})}">
+                        <i class="fa-solid fa-eye"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <nav class="mt-4" th:if="${logPage.totalPages > 1}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, logPage.totalPages - 1)}"
+                th:classappend="${i == logPage.number} ? 'active'">
+                <a class="page-link"
+                   th:href="@{/compliance/audit-logs(page=${i}, keyword=${keyword}, eventType=${eventType}, flaggedOnly=${flaggedOnly})}"
+                   th:text="${i + 1}"></a>
+            </li>
+        </ul>
+    </nav>
+
+</div>
+</body>
+</html>
+

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${contestant.fullName})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:700px">
+    <a class="btn btn-sm btn-outline-secondary mb-3" th:href="@{/staff/contestants}">&larr; Back to Contestants</a>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <div class="rv-card">
+        <div class="d-flex gap-4">
+            <img th:if="${contestant.photoPath}" th:src="@{'/uploads/' + ${contestant.photoPath}}"
+                 style="width:120px;height:120px;object-fit:cover;border-radius:16px" alt="">
+            <div th:unless="${contestant.photoPath}"
+                 style="width:120px;height:120px;border-radius:16px;background:#ece9f7;display:flex;align-items:center;justify-content:center">
+                <i class="fa-solid fa-user fa-2x" style="color:#5a5e6a"></i>
+            </div>
+            <div>
+                <h3 class="rv-page-title mb-1" th:text="${contestant.fullName}">Name</h3>
+                <span class="status-badge" th:classappend="'status-' + ${contestant.status}" th:text="${contestant.status}"></span>
+                <p class="text-muted mb-1 mt-2">
+                    <span th:text="${contestant.age}"></span> yrs &nbsp;|&nbsp;
+                    <span th:text="${contestant.hometown}"></span> &nbsp;|&nbsp;
+                    <span th:text="${contestant.talentCategory}"></span>
+                </p>
+                <small class="text-muted">
+                    Show: <span th:text="${contestant.show.name}"></span>
+                    <span th:if="${contestant.season != null}"> · Season <span th:text="${contestant.season.seasonNumber}"></span></span>
+                </small>
+            </div>
+        </div>
+
+        <hr>
+        <p th:text="${contestant.biography}">Biography</p>
+
+        <hr>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <form method="post" th:action="@{'/staff/contestants/' + ${contestant.id} + '/status'}" class="d-flex gap-2">
+                <select name="newStatus" class="form-select form-select-sm">
+                    <option th:each="s : ${T(com.slit.realityvote.entity.ContestantStatus).values()}"
+                            th:value="${s}" th:text="${s}" th:selected="${s == contestant.status}"></option>
+                </select>
+                <button class="btn btn-sm btn-accent" type="submit">Update Status</button>
+            </form>
+
+            <div class="d-flex gap-2">
+                <a class="btn btn-sm btn-outline-primary" th:href="@{'/staff/contestants/' + ${contestant.id} + '/edit'}">Edit</a>
+                <form method="post" th:action="@{'/staff/contestants/' + ${contestant.id} + '/deactivate'}"
+                      onsubmit="return confirm('Deactivate this contestant? Their record and vote history will be kept for reports.');">
+                    <button class="btn btn-sm btn-outline-danger" type="submit">Deactivate</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

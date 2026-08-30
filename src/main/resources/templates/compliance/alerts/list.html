@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Security Alerts')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<style>
+.severity-LOW{background:#1e2130;color:#9ba3b0;border:1px solid #2d3140;}
+.severity-MEDIUM{background:#1a2340;color:#00e5ff;border:1px solid #00e5ff44;}
+.severity-HIGH{background:#2d1a1a;color:#ffc857;border:1px solid #ffc85744;}
+.severity-CRITICAL{background:#3d1a1a;color:#ff5c72;border:1px solid #ff5c7244;}
+</style>
+<div class="rv-page" style="max-width:1100px">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <a th:href="@{/compliance/dashboard}" class="btn btn-sm btn-outline-dark">
+                <i class="fa-solid fa-arrow-left"></i> Dashboard
+            </a>
+            <h2 class="rv-page-title mb-0">
+                <i class="fa-solid fa-bell"></i> Security Alerts
+            </h2>
+        </div>
+        <a th:href="@{/compliance/alerts/new}" class="btn btn-accent">
+            <i class="fa-solid fa-plus"></i> Raise Alert
+        </a>
+    </div>
+
+    <!-- KPI strip -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold" style="font-size:1.8rem;color:#ff5c72;"
+                     th:text="${openCount}">0</div>
+                <small class="text-muted">Open</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold" style="font-size:1.8rem;color:#ffc857;"
+                     th:text="${investigatingCount}">0</div>
+                <small class="text-muted">Investigating</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold" style="font-size:1.8rem;color:#9ba3b0;"
+                     th:text="${resolvedCount}">0</div>
+                <small class="text-muted">Resolved</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="rv-card text-center py-5" th:if="${#lists.isEmpty(alerts)}">
+        <i class="fa-solid fa-shield-check fa-2x mb-3" style="color:#00e5ff;opacity:.4"></i>
+        <p class="text-muted mb-0">No security alerts have been raised yet.</p>
+    </div>
+
+    <div class="rv-card p-0" th:unless="${#lists.isEmpty(alerts)}">
+        <table class="table mb-0">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Severity</th>
+                <th>Status</th>
+                <th>Session</th>
+                <th>Raised by</th>
+                <th>Date</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="a : ${alerts}">
+                <td class="rv-mono text-muted small" th:text="${a.id}"></td>
+                <td th:text="${a.title}"></td>
+                <td>
+                    <span class="status-badge"
+                          th:classappend="'severity-' + ${a.severity}"
+                          th:text="${a.severity}"></span>
+                </td>
+                <td>
+                    <span class="status-badge"
+                          th:classappend="'status-' + ${a.status}"
+                          th:text="${a.status}"></span>
+                </td>
+                <td class="rv-mono small text-muted"
+                    th:text="${a.sessionId != null ? 'Session #' + a.sessionId : '—'}"></td>
+                <td class="small text-muted" th:text="${a.raisedByEmail}"></td>
+                <td class="small text-muted" th:text="${a.createdDate}"></td>
+                <td>
+                    <a class="btn btn-sm btn-outline-dark"
+                       th:href="@{/compliance/alerts/{id}(id=${a.id})}">
+                        <i class="fa-solid fa-eye"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Voting Session')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:700px">
+    <a class="btn btn-sm btn-outline-secondary mb-3" th:href="@{/admin/voting-sessions}">Back to Sessions</a>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <div class="alert alert-danger" th:if="${votingSession.episode == null}">
+        This session isn't linked to an episode (it may have been deleted). You can still open/close it below,
+        but consider deleting it and creating a new session instead.
+    </div>
+
+    <div class="rv-card mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h4 class="rv-page-title mb-1" th:if="${votingSession.episode != null}"
+                    th:text="${votingSession.episode.season.show.name} + ' - Ep. ' + ${votingSession.episode.episodeNumber} + ': ' + ${votingSession.episode.title}">
+                    Show / Episode
+                </h4>
+                <h4 class="rv-page-title mb-1 text-muted" th:if="${votingSession.episode == null}">
+                    Unknown show / episode
+                </h4>
+                <span class="status-badge" th:if="${votingSession.status != null}" th:classappend="'status-' + ${votingSession.status}" th:text="${votingSession.status}"></span>
+                <span class="status-badge status-UNKNOWN" th:if="${votingSession.status == null}">UNKNOWN</span>
+                <p class="text-muted mt-2 mb-0">
+                    <span th:text="${votingSession.startTime}"></span> to <span th:text="${votingSession.endTime}"></span>
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <form th:if="${votingSession.status == null or (votingSession.status.name() != 'CLOSED' and votingSession.status.name() != 'OPEN')}"
+                      method="post" th:action="@{'/admin/voting-sessions/' + ${votingSession.id} + '/open'}">
+                    <button class="btn btn-sm btn-accent" type="submit">
+                        <i class="fa-solid fa-play"></i> Open Voting
+                    </button>
+                </form>
+                <form th:if="${votingSession.status != null and votingSession.status.name() != 'CLOSED'}"
+                      method="post" th:action="@{'/admin/voting-sessions/' + ${votingSession.id} + '/close'}"
+                      onsubmit="return confirm('Close voting? This cannot be undone.');">
+                    <button class="btn btn-sm btn-outline-danger" type="submit">
+                        <i class="fa-solid fa-stop"></i> Close Voting
+                    </button>
+                </form>
+                <form th:if="${votingSession.episode == null}"
+                      method="post" th:action="@{'/admin/voting-sessions/' + ${votingSession.id} + '/delete'}"
+                      onsubmit="return confirm('Delete this broken session? This cannot be undone.');">
+                    <button class="btn btn-sm btn-outline-secondary" type="submit">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="rv-card mb-4">
+        <h6 class="rv-page-title mb-2">Contestants in this session</h6>
+        <span class="badge bg-light text-dark border me-1 mb-1" th:each="c : ${votingSession.contestants}" th:text="${c.fullName}"></span>
+    </div>
+
+    <div class="rv-card">
+        <h5 class="rv-page-title mb-3"><i class="fa-solid fa-chart-simple"></i> Live Results</h5>
+        <div th:replace="~{voting-sessions/_results :: results}"></div>
+    </div>
+</div>
+</body>
+</html>

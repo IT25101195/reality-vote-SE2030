@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Saved Compliance Reports')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="rv-page" style="max-width:1100px">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a th:href="@{/compliance/dashboard}" class="btn btn-sm btn-outline-dark">
+            <i class="fa-solid fa-arrow-left"></i> Dashboard
+        </a>
+        <h2 class="rv-page-title mb-0">
+            <i class="fa-solid fa-file-shield"></i> Saved Compliance Reports
+        </h2>
+    </div>
+
+    <div class="rv-card text-center py-5" th:if="${#lists.isEmpty(records)}">
+        <i class="fa-solid fa-file-circle-plus fa-2x mb-3" style="color:#00e5ff;opacity:.4"></i>
+        <p class="text-muted mb-0">No compliance reports have been saved yet.</p>
+        <p class="text-muted small mt-1">
+            Open a session's Full Report and click "Save as Draft" to create one.
+        </p>
+    </div>
+
+    <div class="rv-card p-0" th:unless="${#lists.isEmpty(records)}">
+        <table class="table mb-0">
+            <thead>
+            <tr>
+                <th>#</th><th>Session</th><th>Integrity</th>
+                <th>Votes</th><th>Status</th><th>Generated</th><th>Filed</th><th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${records}">
+                <td class="rv-mono text-muted small" th:text="${r.id}"></td>
+                <td th:text="${r.sessionDescription}"></td>
+                <td>
+                    <span class="status-badge"
+                          th:classappend="${r.integrityStatus == 'OK'} ? 'status-ACTIVE' : (${r.integrityStatus == 'WARNING'} ? 'status-SCHEDULED' : 'status-ELIMINATED')"
+                          th:text="${r.integrityStatus}"></span>
+                </td>
+                <td class="rv-mono" th:text="${r.totalVotes}"></td>
+                <td>
+                    <span class="status-badge"
+                          th:classappend="${r.status.name() == 'FILED'} ? 'status-ACTIVE' : 'status-ARCHIVED'"
+                          th:text="${r.status}"></span>
+                </td>
+                <td class="small text-muted" th:text="${r.generatedAt}"></td>
+                <td class="small text-muted" th:text="${r.filedAt != null ? r.filedAt : '—'}"></td>
+                <td>
+                    <a class="btn btn-sm btn-outline-dark"
+                       th:href="@{/compliance/saved-reports/{id}(id=${r.id})}">
+                        <i class="fa-solid fa-eye"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

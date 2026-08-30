@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Contestant Rankings')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:800px">
+    <h2 class="rv-page-title mb-4"><i class="fa-solid fa-ranking-star"></i> Contestant Rankings</h2>
+
+    <form class="rv-card mb-4 d-flex gap-2 align-items-end" method="get" th:action="@{/reports/rankings}">
+        <div class="flex-grow-1">
+            <label class="form-label mb-1">Reality Show</label>
+            <select name="showId" class="form-select" onchange="this.form.submit()">
+                <option value="">Select a show</option>
+                <option th:each="s : ${shows}" th:value="${s.id}" th:text="${s.name}"
+                        th:selected="${selectedShowId != null and selectedShowId == s.id}"></option>
+            </select>
+        </div>
+        <a th:if="${selectedShowId != null}" class="btn btn-outline-dark"
+           th:href="@{/reports/rankings/export(showId=${selectedShowId})}">
+            <i class="fa-solid fa-file-csv"></i> Export CSV
+        </a>
+    </form>
+
+    <div class="rv-card text-center py-5" th:if="${selectedShowId == null}">
+        <p class="text-muted mb-0">Choose a show to see its contestant rankings.</p>
+    </div>
+
+    <div class="rv-card p-0" th:if="${selectedShowId != null}">
+        <div class="p-3 border-bottom">
+            <strong th:text="${showName}">Show Name</strong> — Ranked by combined score (audience votes + judge scores)
+        </div>
+        <table class="table mb-0">
+            <thead>
+            <tr><th>#</th><th>Contestant</th><th>Category</th><th>Status</th><th>Votes</th><th>Avg. Judge Score</th><th>Combined Score</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="row : ${rankings}">
+                <td>
+                    <span th:if="${row.rank == 1}">🥇</span>
+                    <span th:if="${row.rank == 2}">🥈</span>
+                    <span th:if="${row.rank == 3}">🥉</span>
+                    <span th:if="${row.rank > 3}" th:text="${row.rank}"></span>
+                </td>
+                <td th:text="${row.contestantName}"></td>
+                <td th:text="${row.talentCategory}"></td>
+                <td><span class="status-badge" th:classappend="'status-' + ${row.status}" th:text="${row.status}"></span></td>
+                <td class="fw-semibold" th:text="${row.totalVotes}"></td>
+                <td th:text="${row.avgJudgeScore != null ? #numbers.formatDecimal(row.avgJudgeScore, 1, 1) + ' / 100' : '— not judged yet —'}"></td>
+                <td class="fw-semibold" th:text="${#numbers.formatDecimal(row.combinedScore, 1, 1)}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(rankings)}">
+                <td colspan="7" class="text-center text-muted py-4">No contestants found for this show.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

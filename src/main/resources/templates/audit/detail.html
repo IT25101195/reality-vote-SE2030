@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Audit Log Entry')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:720px">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a th:href="@{/compliance/audit-logs}" class="btn btn-sm btn-outline-dark">
+            <i class="fa-solid fa-arrow-left"></i> Audit Log
+        </a>
+        <h2 class="rv-page-title mb-0"><i class="fa-solid fa-magnifying-glass-chart"></i> Audit Entry Detail</h2>
+    </div>
+
+    <div class="rv-card text-center py-5" th:unless="${log}">
+        <p class="text-muted mb-0">Entry not found.</p>
+    </div>
+
+    <div class="rv-card" th:if="${log}">
+        <table class="table table-sm mb-0">
+            <tbody>
+            <tr>
+                <th style="width:170px;color:var(--rv-text-muted)">ID</th>
+                <td class="rv-mono" th:text="${log.id}"></td>
+            </tr>
+            <tr>
+                <th style="color:var(--rv-text-muted)">Timestamp</th>
+                <td class="rv-mono" th:text="${log.createdDate}"></td>
+            </tr>
+            <tr>
+                <th style="color:var(--rv-text-muted)">Event Type</th>
+                <td>
+                    <span class="status-badge"
+                          th:classappend="${log.eventType.name() == 'VOTE_CAST' or log.eventType.name() == 'LOGIN_SUCCESS'} ? 'status-ACTIVE' :
+                                          (${log.eventType.name() == 'SUSPICIOUS_ACTIVITY'} ? 'status-ELIMINATED' : 'status-ARCHIVED')"
+                          th:text="${log.eventType}"></span>
+                </td>
+            </tr>
+            <tr>
+                <th style="color:var(--rv-text-muted)">Actor</th>
+                <td class="rv-mono" th:text="${log.actorEmail}"></td>
+            </tr>
+            <tr>
+                <th style="color:var(--rv-text-muted)">Description</th>
+                <td th:text="${log.description}"></td>
+            </tr>
+            <tr>
+                <th style="color:var(--rv-text-muted)">Flagged</th>
+                <td>
+                    <span class="status-badge status-ELIMINATED" th:if="${log.flagged}">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Yes
+                    </span>
+                    <span class="status-badge status-ACTIVE" th:unless="${log.flagged}">No</span>
+                </td>
+            </tr>
+            <tr th:if="${log.action}">
+                <th style="color:var(--rv-text-muted)">Action</th>
+                <td class="rv-mono" th:text="${log.action}"></td>
+            </tr>
+            <tr th:if="${log.entityType}">
+                <th style="color:var(--rv-text-muted)">Entity Type</th>
+                <td class="rv-mono" th:text="${log.entityType}"></td>
+            </tr>
+            <tr th:if="${log.entityId}">
+                <th style="color:var(--rv-text-muted)">Entity ID</th>
+                <td class="rv-mono" th:text="${log.entityId}"></td>
+            </tr>
+            <tr th:if="${log.ipAddress}">
+                <th style="color:var(--rv-text-muted)">IP Address</th>
+                <td class="rv-mono" th:text="${log.ipAddress}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-3" th:if="${log != null and log.entityType != null and log.entityId != null}">
+        <a class="btn btn-sm btn-outline-dark"
+           th:href="@{/compliance/audit-logs/entity/{type}/{id}(type=${log.entityType},id=${log.entityId})}">
+            <i class="fa-solid fa-list"></i> All entries for this entity
+        </a>
+    </div>
+</div>
+</body>
+</html>

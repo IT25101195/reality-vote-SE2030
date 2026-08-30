@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Voting Sessions')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:900px">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="rv-page-title"><i class="fa-solid fa-square-poll-vertical"></i> Voting Sessions</h2>
+        <a class="btn btn-accent" th:href="@{/admin/voting-sessions/new}">
+            <i class="fa-solid fa-plus"></i> Create Session
+        </a>
+    </div>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <div class="rv-card text-center py-5" th:if="${#lists.isEmpty(sessions)}">
+        <i class="fa-solid fa-square-poll-vertical fa-2x mb-3" style="color:#4a4d58"></i>
+        <p class="text-muted mb-0">No voting sessions yet.</p>
+    </div>
+
+    <div th:each="s : ${sessions}" class="show-card d-flex justify-content-between align-items-center">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h6 class="mb-0" th:if="${s.episode != null}" th:text="${s.episode.season.show.name} + ' - Ep. ' + ${s.episode.episodeNumber} + ': ' + ${s.episode.title}">Show / Episode</h6>
+                <h6 class="mb-0 text-muted" th:if="${s.episode == null}">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Unknown show / episode
+                </h6>
+                <span class="status-badge" th:classappend="'status-' + ${s.status}" th:text="${s.status}"></span>
+            </div>
+            <small class="text-muted">
+                <span th:text="${s.startTime}"></span> to <span th:text="${s.endTime}"></span>
+                &nbsp;|&nbsp; <span th:text="${#lists.size(s.contestants)}"></span> contestant(s)
+            </small>
+        </div>
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{'/admin/voting-sessions/' + ${s.id}}">Manage</a>
+    </div>
+</div>
+</body>
+</html>

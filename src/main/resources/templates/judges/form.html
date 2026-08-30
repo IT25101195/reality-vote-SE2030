@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${isEdit} ? 'Edit Judge' : 'Add Judge')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:700px">
+    <h2 class="rv-page-title mb-4">
+        <i class="fa-solid fa-user-plus"></i>
+        <span th:text="${isEdit} ? 'Edit Judge' : 'Add Judge'"></span>
+    </h2>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <form class="rv-card" method="post" enctype="multipart/form-data"
+          th:object="${judge}"
+          th:action="${isEdit} ? @{'/admin/judges/' + ${judge.id}} : @{/admin/judges}">
+
+        <div class="mb-4" th:if="${isEdit and judge.photoPath!=null}">
+            <label class="form-label">Current Photo</label><br>
+            <img th:src="@{'/uploads/' + ${judge.photoPath}}"
+                 style="width:100px;height:100px;object-fit:cover;border-radius:16px" alt="">
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Photo</label>
+            <input type="file" name="photo" class="form-control" accept="image/*">
+            <small class="text-muted" th:if="${isEdit}">Leave empty to keep the current photo.</small>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" th:field="*{fullName}"
+                   th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Email (used to log in as a Judge)</label>
+                <input type="email" class="form-control" th:field="*{email}"
+                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Phone</label>
+                <input type="text" class="form-control" th:field="*{phone}">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Expertise Area</label>
+            <input type="text" class="form-control" placeholder="e.g. Vocal Coach, Choreographer" th:field="*{expertiseArea}"
+                   th:classappend="${#fields.hasErrors('expertiseArea')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('expertiseArea')}" th:errors="*{expertiseArea}"></div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Biography</label>
+            <textarea class="form-control" rows="3" th:field="*{bio}"></textarea>
+        </div>
+
+        <div class="alert alert-light border" th:unless="${isEdit}">
+            <i class="fa-solid fa-circle-info"></i>
+            Set a login password below to let this judge sign in right away, or leave it blank
+            and create one later from the judge's page. Either way they'll sign in with this email.
+        </div>
+
+        <div class="mb-4" th:unless="${isEdit}">
+            <label class="form-label">Login Password (optional)</label>
+            <input type="password" name="loginPassword" class="form-control" minlength="6"
+                   placeholder="Leave blank to skip login creation for now">
+            <div class="form-text">If set, a JUDGE login account is created immediately using this email + password.</div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-accent px-4">
+                <i class="fa-solid fa-check"></i> <span th:text="${isEdit} ? 'Save Changes' : 'Add Judge'"></span>
+            </button>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/judges}">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

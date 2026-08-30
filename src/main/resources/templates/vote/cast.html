@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Cast Your Vote')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="on-air-strip"><span class="dot"></span> Voting is open — every vote updates the scoreboard live</div>
+
+<div class="rv-page" style="max-width:800px">
+    <a class="btn btn-sm btn-outline-secondary mb-3" th:href="@{/vote}">&larr; Back to Open Sessions</a>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <h4 class="rv-page-title mb-1"
+        th:text="${votingSession.episode.season.show.name} + ' — Ep. ' + ${votingSession.episode.episodeNumber} + ': ' + ${votingSession.episode.title}">
+        Show / Episode
+    </h4>
+    <p class="text-muted mb-4 rv-mono" style="font-size:.85rem;">Voting closes <span th:text="${votingSession.endTime}"></span></p>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6" th:each="c : ${votingSession.contestants}">
+            <div class="show-card d-flex justify-content-between align-items-center h-100" style="border-left-color: var(--rv-gold);">
+                <div class="d-flex align-items-center gap-3">
+                    <img th:if="${c.photoPath}" th:src="@{'/uploads/' + ${c.photoPath}}"
+                         style="width:56px;height:56px;object-fit:cover;border-radius:12px" alt="">
+                    <div th:unless="${c.photoPath}"
+                         style="width:56px;height:56px;border-radius:12px;background:#ece9f7;display:flex;align-items:center;justify-content:center">
+                        <i class="fa-solid fa-user" style="color:#5a5e6a"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold" th:text="${c.fullName}">Name</div>
+                        <small class="text-muted" th:text="${c.talentCategory}"></small>
+                    </div>
+                </div>
+                <form method="post" th:action="@{'/vote/' + ${votingSession.id} + '/contestants/' + ${c.id}}">
+                    <button class="btn btn-sm btn-accent" type="submit"><i class="fa-solid fa-check-to-slot"></i> Vote</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="rv-card">
+        <h5 class="rv-page-title mb-3" style="font-size:1.3rem;"><i class="fa-solid fa-chart-simple"></i> Live Results</h5>
+        <div th:replace="~{voting-sessions/_results :: results}"></div>
+    </div>
+</div>
+</body>
+</html>

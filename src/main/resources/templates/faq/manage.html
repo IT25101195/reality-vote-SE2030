@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Manage FAQs')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:800px">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="rv-page-title"><i class="fa-solid fa-circle-question"></i> Manage FAQs</h2>
+        <a class="btn btn-accent" th:href="@{/staff/faqs/new}"><i class="fa-solid fa-plus"></i> Add FAQ</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <div class="rv-card text-center py-5" th:if="${#lists.isEmpty(faqs)}">
+        <p class="text-muted mb-0">No FAQs yet.</p>
+    </div>
+
+    <div th:each="f : ${faqs}" class="show-card d-flex justify-content-between align-items-center">
+        <div>
+            <span class="badge bg-light text-dark border me-2" th:text="${f.category}"></span>
+            <strong th:text="${f.question}"></strong>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-primary" th:href="@{'/staff/faqs/' + ${f.id} + '/edit'}">Edit</a>
+            <form method="post" th:action="@{'/staff/faqs/' + ${f.id} + '/delete'}"
+                  onsubmit="return confirm('Delete this FAQ?');">
+                <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

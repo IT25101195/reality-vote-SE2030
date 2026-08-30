@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${isEdit} ? 'Edit Show' : 'Create Show')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:700px">
+    <h2 class="rv-page-title mb-4">
+        <i class="fa-solid fa-clapperboard"></i>
+        <span th:text="${isEdit} ? 'Edit Reality Show' : 'Create Reality Show'">Create Show</span>
+    </h2>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <form class="rv-card" th:action="${isEdit} ? @{'/admin/shows/' + ${show.id}} : @{/admin/shows}"
+          th:object="${show}" method="post" enctype="multipart/form-data">
+
+        <div class="mb-3">
+            <label class="form-label">Poster / Cover Photo</label>
+            <div class="d-flex align-items-center gap-3 mb-2" th:if="${show.posterImagePath}">
+                <img th:src="@{'/uploads/' + ${show.posterImagePath}}" alt="Current poster"
+                     style="width:96px;height:64px;object-fit:cover;border-radius:var(--rv-radius);border:1px solid var(--rv-border);">
+                <span class="text-muted small">Current poster &mdash; choose a file below to replace it.</span>
+            </div>
+            <input type="file" name="poster" class="form-control" accept="image/*">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Show Name</label>
+            <input type="text" class="form-control" th:field="*{name}"
+                   th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="3" th:field="*{description}"
+                      th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'"></textarea>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Category</label>
+            <input type="text" class="form-control" placeholder="e.g. Singing, Dance, Talent" th:field="*{category}"
+                   th:classappend="${#fields.hasErrors('category')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Start Date</label>
+                <input type="date" class="form-control" th:field="*{startDate}"
+                       th:classappend="${#fields.hasErrors('startDate')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">End Date</label>
+                <input type="date" class="form-control" th:field="*{endDate}"
+                       th:classappend="${#fields.hasErrors('endDate')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
+            </div>
+        </div>
+
+        <div class="mb-4" th:if="${isEdit}">
+            <label class="form-label">Status</label>
+            <select class="form-select" th:field="*{status}">
+                <option th:each="s : ${T(com.slit.realityvote.entity.ShowStatus).values()}"
+                        th:value="${s}" th:text="${s}"></option>
+            </select>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-accent px-4">
+                <i class="fa-solid fa-check"></i> <span th:text="${isEdit} ? 'Save Changes' : 'Create Show'"></span>
+            </button>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/shows}">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

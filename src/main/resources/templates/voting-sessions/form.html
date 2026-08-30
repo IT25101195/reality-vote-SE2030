@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Create Voting Session')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:700px">
+    <h2 class="rv-page-title mb-4"><i class="fa-solid fa-square-poll-vertical"></i> Create Voting Session</h2>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <form class="rv-card" method="post" th:object="${votingSession}" th:action="@{/admin/voting-sessions}">
+
+        <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+            <div th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Reality Show</label>
+            <select id="showSelect" class="form-select">
+                <option value="">Select a show</option>
+                <option th:each="s : ${shows}" th:value="${s.id}" th:text="${s.name}"></option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Episode</label>
+            <select id="episodeSelect" name="episodeId" class="form-select" disabled>
+                <option value="">Select a show first</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Contestants in this voting round</label>
+            <div id="contestantChecklist" class="rv-card" style="max-height:220px; overflow-y:auto; padding:1rem;">
+                <span class="text-muted">Select a show to load contestants.</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Voting Opens</label>
+                <input type="datetime-local" class="form-control" th:field="*{startTime}"
+                       th:classappend="${#fields.hasErrors('startTime')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('startTime')}" th:errors="*{startTime}"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Voting Closes</label>
+                <input type="datetime-local" class="form-control" th:field="*{endTime}"
+                       th:classappend="${#fields.hasErrors('endTime')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('endTime')}" th:errors="*{endTime}"></div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-2">
+            <button type="submit" class="btn btn-accent px-4">
+                <i class="fa-solid fa-check"></i> Create Session
+            </button>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/voting-sessions}">Cancel</a>
+        </div>
+        <small class="text-muted d-block mt-2">
+            The session is created as SCHEDULED. Open it manually from the session page when you're ready to accept votes.
+        </small>
+    </form>
+</div>
+
+<script>
+    const showSelect = document.getElementById('showSelect');
+    const episodeSelect = document.getElementById('episodeSelect');
+    const contestantChecklist = document.getElementById('contestantChecklist');
+
+    showSelect.addEventListener('change', async () => {
+        const showId = showSelect.value;
+        episodeSelect.innerHTML = '<option value="">Loading...</option>';
+        episodeSelect.disabled = true;
+        contestantChecklist.innerHTML = '<span class="text-muted">Loading contestants...</span>';
+
+        if (!showId) {
+            episodeSelect.innerHTML = '<option value="">Select a show first</option>';
+            contestantChecklist.innerHTML = '<span class="text-muted">Select a show to load contestants.</span>';
+            return;
+        }
+
+        const [episodesRes, contestantsRes] = await Promise.all([
+            fetch(`/admin/voting-sessions/episodes-by-show?showId=${showId}`),
+            fetch(`/admin/voting-sessions/contestants-by-show?showId=${showId}`)
+        ]);
+        const episodes = await episodesRes.json();
+        const contestants = await contestantsRes.json();
+
+        episodeSelect.innerHTML = episodes.length
+            ? '<option value="">Select an episode</option>'
+            : '<option value="">No episodes found for this show</option>';
+        episodes.forEach(e => {
+            const opt = document.createElement('option');
+            opt.value = e.id;
+            opt.textContent = `Ep. ${e.episodeNumber}: ${e.title}`;
+            episodeSelect.appendChild(opt);
+        });
+        episodeSelect.disabled = false;
+
+        contestantChecklist.innerHTML = contestants.length ? '' : '<span class="text-muted">No contestants found for this show.</span>';
+        contestants.forEach(c => {
+            const div = document.createElement('div');
+            div.classList.add('form-check');
+            div.innerHTML = `
+                <input class="form-check-input" type="checkbox" name="contestantIds" value="${c.id}" id="c-${c.id}">
+                <label class="form-check-label" for="c-${c.id}">${c.fullName}</label>`;
+            contestantChecklist.appendChild(div);
+        });
+    });
+</script>
+</body>
+</html>

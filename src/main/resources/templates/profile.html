@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Profile')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:600px">
+    <h2 class="rv-page-title mb-4"><i class="fa-solid fa-user-gear"></i> My Profile</h2>
+
+    <div class="alert alert-success" th:if="${profileSuccessMessage}" th:text="${profileSuccessMessage}"></div>
+
+    <div class="rv-card mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="text-muted">Account type</span>
+            <span class="fw-semibold" th:text="${user.role}">VIEWER</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted">Member since</span>
+            <span th:text="${user.createdDate}">-</span>
+        </div>
+    </div>
+
+    <form class="rv-card mb-4" method="post" th:action="@{/profile}" th:object="${profileForm}">
+        <h5 class="mb-3">Edit Details</h5>
+
+        <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" th:field="*{fullName}"
+                   th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Email</label>
+            <input type="text" class="form-control" th:field="*{email}"
+                   th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+            <small class="text-muted">Changing your email also changes your login - you'll need to log in again afterward.</small>
+        </div>
+
+        <button type="submit" class="btn btn-accent px-4"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+    </form>
+
+    <form class="rv-card" method="post" th:action="@{/profile/password}" th:object="${passwordForm}">
+        <h5 class="mb-3">Change Password</h5>
+
+        <div class="mb-3">
+            <label class="form-label">Current Password</label>
+            <input type="password" class="form-control" th:field="*{currentPassword}"
+                   th:classappend="${#fields.hasErrors('currentPassword')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">New Password</label>
+            <input type="password" class="form-control" th:field="*{newPassword}"
+                   th:classappend="${#fields.hasErrors('newPassword')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}"></div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" th:field="*{confirmNewPassword}"
+                   th:classappend="${#fields.hasErrors('confirmNewPassword')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('confirmNewPassword')}" th:errors="*{confirmNewPassword}"></div>
+        </div>
+
+        <button type="submit" class="btn btn-outline-secondary px-4"><i class="fa-solid fa-key"></i> Change Password</button>
+    </form>
+</div>
+</body>
+</html>

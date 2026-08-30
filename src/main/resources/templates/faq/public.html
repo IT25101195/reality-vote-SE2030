@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('FAQ')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:700px">
+    <h2 class="rv-page-title mb-4"><i class="fa-solid fa-circle-question"></i> Frequently Asked Questions</h2>
+
+    <div class="rv-card text-center py-5" th:if="${#maps.isEmpty(faqsByCategory)}">
+        <p class="text-muted mb-0">No FAQs published yet.</p>
+    </div>
+
+    <div th:each="entry : ${faqsByCategory}" class="mb-4">
+        <h6 class="text-accent text-uppercase mb-2" style="letter-spacing:0.05em" th:text="${entry.key}"></h6>
+        <div class="accordion" th:id="'acc-' + ${entry.key}">
+            <div class="rv-card mb-2" th:each="f, iter : ${entry.value}">
+                <strong th:text="${f.question}"></strong>
+                <p class="text-muted mb-0 mt-1" th:text="${f.answer}"></p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

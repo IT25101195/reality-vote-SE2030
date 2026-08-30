@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Raise Security Alert')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="rv-page" style="max-width:680px">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a th:href="@{/compliance/alerts}" class="btn btn-sm btn-outline-dark">
+            <i class="fa-solid fa-arrow-left"></i> Alerts
+        </a>
+        <h2 class="rv-page-title mb-0">
+            <i class="fa-solid fa-bell-exclamation"></i> Raise Security Alert
+        </h2>
+    </div>
+
+    <div class="rv-card">
+        <p class="text-muted small mb-3">
+            <i class="fa-solid fa-circle-info"></i>
+            Once raised, an alert cannot be deleted — it remains as evidence.
+            You can update the status and description at any time.
+        </p>
+
+        <form method="post" th:action="@{/compliance/alerts}" th:object="${alert}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+            <div class="mb-3">
+                <label class="form-label">Title <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" th:field="*{title}"
+                       placeholder="e.g. Suspicious vote spike — Session #12">
+                <div class="text-danger small" th:if="${#fields.hasErrors('title')}"
+                     th:errors="*{title}"></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Severity</label>
+                <select class="form-select" th:field="*{severity}">
+                    <option th:each="s : ${severities}" th:value="${s}" th:text="${s}"></option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Linked Session (optional)</label>
+                <select class="form-select" th:field="*{sessionId}">
+                    <option value="">— None —</option>
+                    <option th:each="s : ${sessions}"
+                            th:value="${s.id}"
+                            th:text="'Session #' + ${s.id} + ' (' + ${s.status} + ')'">
+                    </option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Related Actor Email (optional)</label>
+                <input type="text" class="form-control" th:field="*{relatedActorEmail}"
+                       placeholder="voter@example.com">
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" rows="5"
+                          th:field="*{description}"
+                          placeholder="Describe the suspicious pattern, what triggered this alert, and any immediate actions recommended."></textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-accent" type="submit">
+                    <i class="fa-solid fa-bell"></i> Raise Alert
+                </button>
+                <a th:href="@{/compliance/alerts}" class="btn btn-outline-dark">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

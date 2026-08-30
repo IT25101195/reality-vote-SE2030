@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Support Tickets')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:900px">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="rv-page-title"><i class="fa-solid fa-headset"></i> Support Tickets</h2>
+        <span class="status-badge status-OPEN" th:if="${openCount > 0}">
+            <span th:text="${openCount}"></span> open
+        </span>
+    </div>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <form class="rv-card mb-4 d-flex gap-2 align-items-end" method="get" th:action="@{/staff/support/tickets}">
+        <div class="flex-grow-1">
+            <label class="form-label mb-1">Filter by Status</label>
+            <select name="status" class="form-select" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                        th:selected="${status != null and status == s}"></option>
+            </select>
+        </div>
+    </form>
+
+    <div class="rv-card text-center py-5" th:if="${ticketPage.totalElements == 0}">
+        <p class="text-muted mb-0">No tickets match this filter.</p>
+    </div>
+
+    <div th:each="t : ${ticketPage.content}" class="show-card d-flex justify-content-between align-items-center">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-semibold" th:text="${t.reference}"></span>
+                <span class="status-badge" th:classappend="'status-' + ${t.status}" th:text="${t.status}"></span>
+            </div>
+            <div th:text="${t.subject}"></div>
+            <small class="text-muted">
+                <span th:text="${t.submittedBy.email}"></span> &middot; <span th:text="${t.createdDate}"></span>
+            </small>
+        </div>
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{'/staff/support/tickets/' + ${t.id}}">Respond</a>
+    </div>
+
+    <nav class="mt-4" th:if="${ticketPage.totalPages > 1}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, ticketPage.totalPages - 1)}"
+                th:classappend="${i == ticketPage.number} ? 'active'">
+                <a class="page-link" th:href="@{/staff/support/tickets(page=${i}, status=${status})}" th:text="${i + 1}"></a>
+            </li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>

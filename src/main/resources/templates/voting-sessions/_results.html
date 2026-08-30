@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="results">
+    <p class="text-muted" th:if="${#lists.isEmpty(results)}">No votes recorded yet.</p>
+    <div th:each="r,iter : ${results}" class="mb-3">
+        <div class="d-flex justify-content-between align-items-baseline mb-1">
+            <span class="fw-semibold">
+                <span class="rv-mono text-muted" style="font-size:.75rem;" th:text="${'#' + (iter.index + 1)}"></span>
+                <span th:text="${r.contestantName}">Name</span>
+            </span>
+            <span class="vote-count">
+                <span th:text="${r.voteCount}"></span> votes &middot; <span th:text="${r.percentage}"></span>%
+            </span>
+        </div>
+        <div class="vote-bar-track">
+            <div class="vote-bar-fill" th:style="'width:' + ${r.percentage} + '%'"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

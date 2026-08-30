@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Vote Now')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="on-air-strip"><span class="dot"></span> Live voting sessions</div>
+
+<div class="rv-page" style="max-width:800px">
+    <h2 class="rv-page-title mb-4"><i class="fa-solid fa-check-to-slot"></i> Open Voting Sessions</h2>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <div class="rv-card text-center py-5" th:if="${#lists.isEmpty(sessions)}">
+        <i class="fa-solid fa-clock fa-2x mb-3" style="color:#4a4d58"></i>
+        <p class="text-muted mb-0">No voting sessions are open right now. Check back soon!</p>
+    </div>
+
+    <div th:each="s : ${sessions}" class="show-card d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="mb-1" th:text="${s.episode.season.show.name} + ' — Ep. ' + ${s.episode.episodeNumber} + ': ' + ${s.episode.title}">Show</h6>
+            <small class="text-muted">Voting closes <span th:text="${s.endTime}"></span></small>
+        </div>
+        <a class="btn btn-sm btn-accent" th:href="@{'/vote/' + ${s.id}}">Vote Now</a>
+    </div>
+</div>
+</body>
+</html>

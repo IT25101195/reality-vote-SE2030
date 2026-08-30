@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Audit — Entity History')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:1000px">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a th:href="@{/compliance/audit-logs}" class="btn btn-sm btn-outline-dark">
+            <i class="fa-solid fa-arrow-left"></i> Audit Log
+        </a>
+        <h2 class="rv-page-title mb-0">
+            <i class="fa-solid fa-database"></i> Entity History —
+            <span class="rv-mono" th:text="${entityType} + ' #' + ${entityId}"></span>
+        </h2>
+    </div>
+
+    <div class="rv-card text-center py-5" th:if="${#lists.isEmpty(logs)}">
+        <p class="text-muted mb-0">No audit events found for this entity.</p>
+    </div>
+
+    <div class="rv-card p-0" th:unless="${#lists.isEmpty(logs)}">
+        <table class="table mb-0">
+            <thead>
+            <tr>
+                <th>Time</th><th>Event</th><th>Actor</th><th>Description</th><th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="log : ${logs}" th:classappend="${log.flagged} ? 'table-danger'">
+                <td class="text-nowrap small text-muted" th:text="${log.createdDate}"></td>
+                <td>
+                    <span class="status-badge"
+                          th:classappend="${log.eventType.name() == 'VOTE_CAST' or log.eventType.name() == 'LOGIN_SUCCESS'} ? 'status-ACTIVE' :
+                                          (${log.eventType.name() == 'SUSPICIOUS_ACTIVITY'} ? 'status-ELIMINATED' : 'status-ARCHIVED')"
+                          th:text="${log.eventType}"></span>
+                </td>
+                <td th:text="${log.actorEmail}"></td>
+                <td th:text="${log.description}"></td>
+                <td>
+                    <a class="btn btn-sm btn-outline-dark" th:href="@{/compliance/audit-logs/{id}(id=${log.id})}">
+                        <i class="fa-solid fa-eye"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

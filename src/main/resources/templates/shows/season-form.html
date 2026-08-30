@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Add Season')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:600px">
+    <a class="btn btn-sm btn-outline-secondary mb-3" th:href="@{'/admin/shows/' + ${show.id}}">&larr; Back to <span th:text="${show.name}"></span></a>
+
+    <h2 class="rv-page-title mb-4"><i class="fa-solid fa-layer-group"></i> Add Season</h2>
+
+    <form class="rv-card" method="post" th:object="${season}" th:action="@{'/admin/shows/' + ${show.id} + '/seasons'}">
+        <div class="mb-3">
+            <label class="form-label">Season Number</label>
+            <input type="number" min="1" class="form-control" th:field="*{seasonNumber}"
+                   th:classappend="${#fields.hasErrors('seasonNumber')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('seasonNumber')}" th:errors="*{seasonNumber}"></div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Start Date</label>
+                <input type="date" class="form-control" th:field="*{startDate}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">End Date</label>
+                <input type="date" class="form-control" th:field="*{endDate}">
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-2">
+            <button type="submit" class="btn btn-accent px-4"><i class="fa-solid fa-check"></i> Add Season</button>
+            <a class="btn btn-outline-secondary" th:href="@{'/admin/shows/' + ${show.id}}">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

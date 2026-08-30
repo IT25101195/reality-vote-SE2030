@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Scoring History')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:900px">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="rv-page-title"><i class="fa-solid fa-clock-rotate-left"></i> My Scoring History</h2>
+        <a class="btn btn-outline-secondary" th:href="@{/judge/scores}">&larr; Back to My Episodes</a>
+    </div>
+
+    <div class="rv-card text-center py-5" th:if="${#lists.isEmpty(scores)}">
+        <p class="text-muted mb-0">You haven't submitted any scores yet.</p>
+    </div>
+
+    <div class="rv-card" th:unless="${#lists.isEmpty(scores)}">
+        <table class="table table-sm align-middle mb-0">
+            <thead>
+            <tr><th>Contestant</th><th>Episode</th><th>Score</th><th>Remarks</th><th>Submitted</th><th>Last Updated</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="s : ${scores}">
+                <td th:text="${s.contestant.fullName}"></td>
+                <td th:text="'Ep. ' + ${s.episode.episodeNumber} + ' — ' + ${s.episode.title}"></td>
+                <td><strong th:text="${s.scoreValue}"></strong> / 100</td>
+                <td th:text="${s.remarks}"></td>
+                <td th:text="${#temporals.format(s.submittedDate, 'dd MMM yyyy, HH:mm')}"></td>
+                <td th:text="${#temporals.format(s.updatedDate, 'dd MMM yyyy, HH:mm')}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Panels Overview')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:1000px">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="rv-page-title"><i class="fa-solid fa-people-group"></i> Judging Panels Overview</h2>
+        <a class="btn btn-outline-secondary" th:href="@{/admin/judges}">&larr; Back to Judges</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <form class="rv-card mb-4 row g-2 align-items-end" method="get" th:action="@{/admin/judges/panels}">
+        <div class="col-md-8">
+            <label class="form-label mb-1">Reality Show</label>
+            <select name="showId" class="form-select" onchange="this.form.submit()">
+                <option value="">Select a show to view its panels…</option>
+                <option th:each="s : ${shows}" th:value="${s.id}" th:text="${s.name}"
+                        th:selected="${selectedShowId != null and selectedShowId == s.id}"></option>
+            </select>
+        </div>
+    </form>
+
+    <div th:if="${selectedShow == null}" class="rv-card text-center py-5">
+        <p class="text-muted mb-0">Pick a show above to see its panels and judging windows.</p>
+    </div>
+
+    <div th:if="${selectedShow != null}">
+        <div class="rv-card mb-4">
+            <h5 class="mb-3" th:text="${selectedShow.name}"></h5>
+
+            <div th:if="${#lists.isEmpty(assignments)}" class="text-muted">No judges assigned to this show yet.</div>
+
+            <table class="table table-sm align-middle" th:unless="${#lists.isEmpty(assignments)}">
+                <thead><tr><th>Judge</th><th>Panel</th><th>Season</th><th>Episode</th></tr></thead>
+                <tbody>
+                <tr th:each="a : ${assignments}">
+                    <td><a th:href="@{'/admin/judges/' + ${a.judge.id}}" th:text="${a.judge.fullName}"></a></td>
+                    <td th:text="${a.panelName}"></td>
+                    <td th:text="${a.season != null ? ('Season ' + a.season.seasonNumber) : '— whole show —'}"></td>
+                    <td th:text="${a.episode != null ? ('Ep. ' + a.episode.episodeNumber + ' — ' + a.episode.title) : '— whole season —'}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="rv-card">
+            <h5 class="mb-3"><i class="fa-solid fa-toggle-on"></i> Judging Windows</h5>
+            <p class="text-muted small">Open an episode's judging window so its assigned judges can submit or revise scores.</p>
+
+            <table class="table table-sm align-middle" th:each="season : ${selectedShow.seasons}">
+                <caption th:text="'Season ' + ${season.seasonNumber}" style="caption-side: top; font-weight: 600; color: var(--rv-navy);"></caption>
+                <thead><tr><th>Episode</th><th>Voting</th><th>Judging</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="ep : ${season.episodes}">
+                    <td th:text="'Ep. ' + ${ep.episodeNumber} + ' — ' + ${ep.title}"></td>
+                    <td><span class="status-badge" th:classappend="${ep.votingOpen} ? 'status-OPEN' : 'status-CLOSED'"
+                              th:text="${ep.votingOpen} ? 'OPEN' : 'CLOSED'"></span></td>
+                    <td><span class="status-badge" th:classappend="${ep.judgingOpen} ? 'status-OPEN' : 'status-CLOSED'"
+                              th:text="${ep.judgingOpen} ? 'OPEN' : 'CLOSED'"></span></td>
+                    <td>
+                        <form method="post" th:action="@{'/admin/judges/episodes/' + ${ep.id} + '/judging-window'}" class="d-inline">
+                            <input type="hidden" name="showId" th:value="${selectedShow.id}">
+                            <input type="hidden" name="open" th:value="${!ep.judgingOpen}">
+                            <button type="submit" class="btn btn-sm"
+                                    th:classappend="${ep.judgingOpen} ? 'btn-outline-danger' : 'btn-outline-success'"
+                                    th:text="${ep.judgingOpen} ? 'Close Judging' : 'Open Judging'"></button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

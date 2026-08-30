@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Compliance Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:1100px">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 class="rv-page-title mb-0">
+            <i class="fa-solid fa-shield-halved"></i> Compliance Officer Dashboard
+        </h2>
+        <span class="rv-mono" style="font-size:.8rem;color:var(--rv-text-muted);">Module 6.4 — Voting Compliance &amp; Security</span>
+    </div>
+
+    <!-- Flash message (purge result) -->
+    <div class="alert alert-info" th:if="${purgeMessage}" th:text="${purgeMessage}"></div>
+
+    <!-- KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4 col-xl-2">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold" style="color:var(--rv-cyan);font-size:2rem;" th:text="${stats.totalEvents}">0</div>
+                <small class="text-muted">Total Events</small>
+            </div>
+        </div>
+        <div class="col-md-4 col-xl-2">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold"
+                     th:text="${stats.flaggedEvents}"
+                     th:style="'font-size:2rem;' + (${stats.flaggedEvents > 0} ? 'color:#ff5c72' : 'color:var(--rv-cyan)')">0</div>
+                <small class="text-muted">Flagged Events</small>
+            </div>
+        </div>
+        <div class="col-md-4 col-xl-2">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold"
+                     th:text="${stats.suspiciousActivityCount}"
+                     th:style="'font-size:2rem;' + (${stats.suspiciousActivityCount > 0} ? 'color:#ffc857' : 'color:var(--rv-cyan)')">0</div>
+                <small class="text-muted">Suspicious Alerts</small>
+            </div>
+        </div>
+        <div class="col-md-4 col-xl-2">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold" style="color:var(--rv-cyan);font-size:2rem;" th:text="${stats.loginFailures}">0</div>
+                <small class="text-muted">Login Failures</small>
+            </div>
+        </div>
+        <div class="col-md-4 col-xl-2">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold" style="color:var(--rv-cyan);font-size:2rem;" th:text="${stats.voteRejections}">0</div>
+                <small class="text-muted">Vote Rejections</small>
+            </div>
+        </div>
+        <div class="col-md-4 col-xl-2">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold"
+                     th:text="${stats.flaggedLast24h}"
+                     th:style="'font-size:2rem;' + (${stats.flaggedLast24h > 0} ? 'color:#ff5c72' : 'color:var(--rv-cyan)')">0</div>
+                <small class="text-muted">Flagged (24 h)</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <!-- Quick Navigation -->
+        <div class="col-md-6">
+            <div class="rv-card h-100">
+                <h5 class="rv-page-title mb-3"><i class="fa-solid fa-compass"></i> Quick Navigation</h5>
+                <div class="d-grid gap-2">
+                    <a class="btn btn-outline-dark" th:href="@{/compliance/audit-logs}">
+                        <i class="fa-solid fa-list"></i> Audit Log — Full List
+                    </a>
+                    <a class="btn btn-outline-dark" th:href="@{/compliance/audit-logs(flaggedOnly=true)}">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Audit Log — Flagged Only
+                    </a>
+                    <a class="btn btn-outline-dark" th:href="@{/compliance/activity}">
+                        <i class="fa-solid fa-chart-bar"></i> Voting Activity
+                    </a>
+                    <a class="btn btn-outline-dark" th:href="@{/compliance/anomalies}">
+                        <i class="fa-solid fa-bug"></i> Anomaly Detection
+                    </a>
+                    <a class="btn btn-accent" th:href="@{/compliance/audit-logs/export}">
+                        <i class="fa-solid fa-file-csv"></i> Export Audit Log (CSV)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Suspicious Actors -->
+        <div class="col-md-6">
+            <div class="rv-card h-100">
+                <h5 class="rv-page-title mb-3">
+                    <i class="fa-solid fa-user-secret"></i> Top Suspicious Actors
+                </h5>
+                <div class="text-muted" th:if="${#lists.isEmpty(topActors)}">No flagged actors yet.</div>
+                <table class="table table-sm mb-0" th:unless="${#lists.isEmpty(topActors)}">
+                    <thead><tr><th>Actor</th><th class="text-end">Flagged Events</th></tr></thead>
+                    <tbody>
+                    <tr th:each="a : ${topActors}">
+                        <td class="rv-mono" th:text="${a.actorEmail}"></td>
+                        <td class="text-end">
+                            <span class="status-badge status-ELIMINATED rv-mono" th:text="${a.flaggedCount}"></span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voting Sessions — run integrity check or view report -->
+    <div class="rv-card">
+        <h5 class="rv-page-title mb-3"><i class="fa-solid fa-square-poll-vertical"></i> Session Compliance Checks</h5>
+        <div class="text-muted" th:if="${#lists.isEmpty(sessions)}">No voting sessions exist yet.</div>
+        <div class="table-responsive" th:unless="${#lists.isEmpty(sessions)}">
+            <table class="table mb-0">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Episode</th>
+                    <th>Status</th>
+                    <th>Window</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${sessions}">
+                    <td class="rv-mono" th:text="${s.id}"></td>
+                    <td th:text="${s.episode.id}"></td>
+                    <td>
+                        <span class="status-badge"
+                              th:classappend="${s.status.name() == 'OPEN'} ? 'status-ACTIVE' : (${s.status.name() == 'CLOSED'} ? 'status-ARCHIVED' : 'status-SCHEDULED')"
+                              th:text="${s.status}"></span>
+                    </td>
+                    <td class="rv-mono small"
+                        th:text="${#temporals.format(s.startTime,'dd MMM HH:mm')} + ' → ' + ${#temporals.format(s.endTime,'HH:mm')}"></td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-dark me-1"
+                           th:href="@{/compliance/verify/{id}(id=${s.id})}">
+                            <i class="fa-solid fa-check-double"></i> Verify
+                        </a>
+                        <a class="btn btn-sm btn-outline-dark"
+                           th:href="@{/compliance/reports/{id}(id=${s.id})}">
+                            <i class="fa-solid fa-file-alt"></i> Report
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Admin-only purge panel -->
+    <div class="rv-card mt-4" sec:authorize="hasRole('ADMINISTRATOR')">
+        <h5 class="rv-page-title mb-3"><i class="fa-solid fa-trash-can"></i> Purge Old Audit Entries</h5>
+        <p class="text-muted small mb-3">
+            Removes non-vote audit entries older than the specified number of days.
+            Vote-related entries (VOTE_CAST, VOTE_REJECTED) are <strong>never</strong> deleted.
+        </p>
+        <form method="post" th:action="@{/compliance/audit-logs/purge}" class="row g-2 align-items-end">
+            <div class="col-auto">
+                <label class="form-label mb-1">Days old (&ge;)</label>
+                <input type="number" name="daysOld" min="30" value="365" class="form-control" style="width:120px">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-danger"
+                        onclick="return confirm('Delete non-vote audit entries older than specified days?')">
+                    <i class="fa-solid fa-trash-can"></i> Purge
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

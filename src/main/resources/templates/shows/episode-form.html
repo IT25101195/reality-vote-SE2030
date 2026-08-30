@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Add Episode')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:600px">
+    <a class="btn btn-sm btn-outline-secondary mb-3" th:href="@{'/admin/shows/' + ${show.id}}">&larr; Back to <span th:text="${show.name}"></span></a>
+
+    <h2 class="rv-page-title mb-1"><i class="fa-solid fa-clapperboard"></i> Add Episode</h2>
+    <p class="text-muted mb-4">Season <span th:text="${season.seasonNumber}" class="rv-mono"></span> &middot; <span th:text="${show.name}"></span></p>
+
+    <form class="rv-card" method="post"
+          th:object="${episode}"
+          th:action="@{'/admin/shows/' + ${show.id} + '/seasons/' + ${season.id} + '/episodes'}">
+        <div class="mb-3">
+            <label class="form-label">Episode Number</label>
+            <input type="number" min="1" class="form-control" th:field="*{episodeNumber}"
+                   th:classappend="${#fields.hasErrors('episodeNumber')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('episodeNumber')}" th:errors="*{episodeNumber}"></div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" th:field="*{title}"
+                   th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Air Date</label>
+            <input type="date" class="form-control" th:field="*{airDate}">
+        </div>
+        <div class="d-flex gap-2 mt-2">
+            <button type="submit" class="btn btn-accent px-4"><i class="fa-solid fa-check"></i> Add Episode</button>
+            <a class="btn btn-outline-secondary" th:href="@{'/admin/shows/' + ${show.id}}">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${ticket.reference})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:650px">
+    <a class="btn btn-sm btn-outline-secondary mb-3" th:href="@{/staff/support/tickets}">&larr; Back to Tickets</a>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <div class="rv-card mb-4">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h4 class="rv-page-title mb-0" th:text="${ticket.reference}"></h4>
+            <span class="status-badge" th:classappend="'status-' + ${ticket.status}" th:text="${ticket.status}"></span>
+        </div>
+        <h6 th:text="${ticket.subject}"></h6>
+        <p class="text-muted" th:text="${ticket.description}"></p>
+        <small class="text-muted">
+            Submitted by <span th:text="${ticket.submittedBy.email}"></span> on <span th:text="${ticket.createdDate}"></span>
+        </small>
+
+        <div th:if="${ticket.staffResponse != null}" class="mt-4 p-3" style="background:#f6f5fb; border-radius:12px">
+            <strong>Previous response</strong>
+            <p class="mb-1 mt-2" th:text="${ticket.staffResponse}"></p>
+            <small class="text-muted" th:if="${ticket.resolvedBy != null}">
+                By <span th:text="${ticket.resolvedBy.email}"></span> on <span th:text="${ticket.updatedDate}"></span>
+            </small>
+        </div>
+    </div>
+
+    <form class="rv-card" method="post" th:action="@{'/staff/support/tickets/' + ${ticket.id} + '/respond'}">
+        <div class="mb-3">
+            <label class="form-label">Response</label>
+            <textarea name="response" class="form-control" rows="4" required th:text="${ticket.staffResponse}"></textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Update Status</label>
+            <select name="newStatus" class="form-select">
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}" th:selected="${s == ticket.status}"></option>
+            </select>
+        </div>
+        <button class="btn btn-accent px-4" type="submit"><i class="fa-solid fa-reply"></i> Send Response</button>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Judge Details')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:900px">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="rv-page-title"><i class="fa-solid fa-gavel"></i> <span th:text="${judge.fullName}"></span></h2>
+        <a class="btn btn-outline-secondary" th:href="@{/admin/judges}">&larr; Back to Judges</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <!-- Profile card -->
+    <div class="rv-card mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div class="d-flex gap-4">
+                <img th:if="${judge.photoPath}" th:src="@{'/uploads/' + ${judge.photoPath}}"
+                     style="width:120px;height:120px;object-fit:cover;border-radius:16px" alt="">
+                <div th:unless="${judge.photoPath}"
+                     style="width:120px;height:120px;border-radius:16px;background:#ece9f7;display:flex;align-items:center;justify-content:center">
+                    <i class="fa-solid fa-gavel fa-2x" style="color:#5a5e6a"></i>
+                </div>
+                <div>
+                    <span class="status-badge" th:classappend="'status-' + ${judge.status}" th:text="${judge.status}"></span>
+                    <p class="mb-1 mt-2"><i class="fa-solid fa-envelope me-1"></i> <span th:text="${judge.email}"></span></p>
+                    <p class="mb-1" th:if="${judge.phone}"><i class="fa-solid fa-phone me-1"></i> <span th:text="${judge.phone}"></span></p>
+                    <p class="mb-1"><i class="fa-solid fa-star me-1"></i> <span th:text="${judge.expertiseArea}"></span></p>
+                    <p class="text-muted mt-2 mb-0" th:if="${judge.bio}" th:text="${judge.bio}"></p>
+                </div>
+            </div>
+            <div class="d-flex flex-column gap-2">
+                <a class="btn btn-sm btn-outline-primary" th:href="@{'/admin/judges/' + ${judge.id} + '/edit'}">Edit Profile</a>
+
+                <form method="post" th:action="@{'/admin/judges/' + ${judge.id} + '/status'}"
+                      th:if="${judge.status.name() == 'ACTIVE'}">
+                    <input type="hidden" name="newStatus" value="INACTIVE">
+                    <button type="submit" class="btn btn-sm btn-outline-warning w-100">Set Inactive</button>
+                </form>
+                <form method="post" th:action="@{'/admin/judges/' + ${judge.id} + '/status'}"
+                      th:if="${judge.status.name() == 'INACTIVE'}">
+                    <input type="hidden" name="newStatus" value="ACTIVE">
+                    <button type="submit" class="btn btn-sm btn-outline-success w-100">Set Active</button>
+                </form>
+
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                        th:if="${!hasLogin}" data-bs-target="#createLoginModal">
+                    Create Login
+                </button>
+
+                <form method="post" th:action="@{'/admin/judges/' + ${judge.id} + '/deactivate'}"
+                      onsubmit="return confirm('Deactivate this judge?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">Deactivate</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

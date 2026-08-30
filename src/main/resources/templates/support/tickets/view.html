@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${ticket.reference})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:650px">
+    <a class="btn btn-sm btn-outline-secondary mb-3" th:href="@{/support/tickets}">&larr; Back to My Tickets</a>
+
+    <div class="rv-card">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h4 class="rv-page-title mb-0" th:text="${ticket.reference}">TCK-000001</h4>
+            <span class="status-badge" th:classappend="'status-' + ${ticket.status}" th:text="${ticket.status}"></span>
+        </div>
+        <h6 th:text="${ticket.subject}">Subject</h6>
+        <p class="text-muted" th:text="${ticket.description}">Description</p>
+        <small class="text-muted">Submitted <span th:text="${ticket.createdDate}"></span></small>
+
+        <div th:if="${ticket.staffResponse != null}" class="mt-4 p-3" style="background:#f6f5fb; border-radius:12px">
+            <strong><i class="fa-solid fa-reply"></i> Support Response</strong>
+            <p class="mb-1 mt-2" th:text="${ticket.staffResponse}"></p>
+            <small class="text-muted">Updated <span th:text="${ticket.updatedDate}"></span></small>
+        </div>
+        <p class="text-muted mt-4 mb-0" th:if="${ticket.staffResponse == null}">
+            <i class="fa-regular fa-clock"></i> Our support team hasn't responded yet.
+        </p>
+    </div>
+</div>
+</body>
+</html>

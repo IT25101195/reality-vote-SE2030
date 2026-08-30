@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Judges')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:1200px">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="rv-page-title"><i class="fa-solid fa-gavel"></i> Judge &amp; Panel Management</h2>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-dark" th:href="@{/admin/judges/panels}">
+                <i class="fa-solid fa-people-group"></i> Panels Overview
+            </a>
+            <a class="btn btn-accent" th:href="@{/admin/judges/new}">
+                <i class="fa-solid fa-user-plus"></i> Add Judge
+            </a>
+        </div>
+    </div>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <!-- Search + Filter -->
+    <form class="rv-card mb-4 row g-2 align-items-end" method="get" th:action="@{/admin/judges}">
+        <div class="col-md-6">
+            <label class="form-label mb-1">Search by name or expertise</label>
+            <input type="text" name="keyword" class="form-control" th:value="${keyword}" placeholder="Judge name or expertise...">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label mb-1">Status</label>
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}"
+                        th:selected="${status != null and status == st}"></option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-outline-dark w-100" type="submit">Apply</button>
+        </div>
+    </form>
+
+    <!-- Empty state -->
+    <div class="rv-card text-center py-5" th:if="${judgePage.totalElements == 0}">
+        <i class="fa-solid fa-gavel fa-2x mb-3" style="color:#4a4d58"></i>
+        <p class="text-muted mb-0">No judges match your search.</p>
+    </div>
+
+    <!-- Grid -->
+    <div class="row g-3" th:unless="${judgePage.totalElements == 0}">
+        <div class="col-md-4" th:each="j : ${judgePage.content}">
+            <div class="show-card h-100">
+                <div class="d-flex gap-3">
+                    <img th:if="${j.photoPath}" th:src="@{'/uploads/' + ${j.photoPath}}"
+                         style="width:64px;height:64px;object-fit:cover;border-radius:12px" alt="">
+                    <div th:unless="${j.photoPath}"
+                         style="width:64px;height:64px;border-radius:12px;background:#ece9f7;display:flex;align-items:center;justify-content:center">
+                        <i class="fa-solid fa-scale-balanced" style="color:#5a5e6a"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1" th:text="${j.fullName}">Name</h6>
+                        <span class="status-badge" th:classappend="'status-' + ${j.status}" th:text="${j.status}"></span>
+                        <p class="text-muted small mb-0 mt-1" th:text="${j.expertiseArea}"></p>
+                        <small class="text-muted" th:text="${j.email}"></small>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <a class="btn btn-sm btn-outline-secondary flex-fill" th:href="@{'/admin/judges/' + ${j.id}}">View</a>
+                    <a class="btn btn-sm btn-outline-primary flex-fill" th:href="@{'/admin/judges/' + ${j.id} + '/edit'}">Edit</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav class="mt-4" th:if="${judgePage.totalPages > 1}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, judgePage.totalPages - 1)}"
+                th:classappend="${i == judgePage.number} ? 'active'">
+                <a class="page-link"
+                   th:href="@{/admin/judges(page=${i}, keyword=${keyword}, status=${status})}"
+                   th:text="${i + 1}"></a>
+            </li>
+        </ul>
+    </nav>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${isEdit} ? 'Edit Contestant' : 'Add Contestant')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:700px">
+    <h2 class="rv-page-title mb-4">
+        <i class="fa-solid fa-user-plus"></i>
+        <span th:text="${isEdit} ? 'Edit Contestant' : 'Add Contestant'"></span>
+    </h2>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <form class="rv-card" method="post" enctype="multipart/form-data"
+          th:object="${contestant}"
+          th:action="${isEdit} ? @{'/staff/contestants/' + ${contestant.id}} : @{/staff/contestants}">
+
+        <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" th:field="*{fullName}"
+                   th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Age</label>
+                <input type="number" class="form-control" th:field="*{age}"
+                       th:classappend="${#fields.hasErrors('age')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('age')}" th:errors="*{age}"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Hometown</label>
+                <input type="text" class="form-control" th:field="*{hometown}"
+                       th:classappend="${#fields.hasErrors('hometown')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('hometown')}" th:errors="*{hometown}"></div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Talent Category</label>
+            <input type="text" class="form-control" placeholder="e.g. Singing, Dance" th:field="*{talentCategory}"
+                   th:classappend="${#fields.hasErrors('talentCategory')} ? 'is-invalid'">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('talentCategory')}" th:errors="*{talentCategory}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Biography</label>
+            <textarea class="form-control" rows="3" th:field="*{biography}"
+                      th:classappend="${#fields.hasErrors('biography')} ? 'is-invalid'"></textarea>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('biography')}" th:errors="*{biography}"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Reality Show</label>
+                <select id="showSelect" name="showId" class="form-select">
+                    <option value="">Select a show</option>
+                    <option th:each="s : ${shows}" th:value="${s.id}" th:text="${s.name}"
+                            th:selected="${contestant.show != null and contestant.show.id == s.id}"></option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Season (optional)</label>
+                <select id="seasonSelect" name="seasonId" class="form-select">
+                    <option value="">— none —</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Profile Photo</label>
+            <input type="file" name="photo" class="form-control" accept="image/*">
+            <small class="text-muted" th:if="${isEdit}">Leave empty to keep the current photo.</small>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-accent px-4">
+                <i class="fa-solid fa-check"></i> <span th:text="${isEdit} ? 'Save Changes' : 'Add Contestant'"></span>
+            </button>
+            <a class="btn btn-outline-secondary" th:href="@{/staff/contestants}">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    const preselectedSeasonId = /*[[${contestant.season != null ? contestant.season.id : null}]]*/ null;
+
+    const showSelect = document.getElementById('showSelect');
+    const seasonSelect = document.getElementById('seasonSelect');
+
+    async function loadSeasons(showId, selectId) {
+        seasonSelect.innerHTML = '<option value="">— none —</option>';
+        if (!showId) return;
+        const res = await fetch(`/staff/contestants/seasons-by-show?showId=${showId}`);
+        const seasons = await res.json();
+        seasons.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = 'Season ' + s.seasonNumber;
+            if (selectId && s.id === selectId) opt.selected = true;
+            seasonSelect.appendChild(opt);
+        });
+    }
+
+    showSelect.addEventListener('change', () => loadSeasons(showSelect.value, null));
+
+    if (showSelect.value) {
+        loadSeasons(showSelect.value, preselectedSeasonId);
+    }
+</script>
+</body>
+</html>

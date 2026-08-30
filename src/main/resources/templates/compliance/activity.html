@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Voting Activity')}">
+    <!-- Highcharts loaded in body to avoid render-blocking -->
+</head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:1100px">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a th:href="@{/compliance/dashboard}" class="btn btn-sm btn-outline-dark">
+            <i class="fa-solid fa-arrow-left"></i> Dashboard
+        </a>
+        <h2 class="rv-page-title mb-0">
+            <i class="fa-solid fa-chart-column"></i> Vote Activity Chart
+        </h2>
+    </div>
+
+    <!-- Session selector -->
+    <form class="rv-card mb-4 row g-2 align-items-end"
+          method="get" th:action="@{/compliance/activity}">
+        <div class="col-md-8">
+            <label class="form-label mb-1">Select Voting Session</label>
+            <select name="sessionId" class="form-select">
+                <option value="">— Choose a session —</option>
+                <option th:each="s : ${sessions}"
+                        th:value="${s.id}"
+                        th:text="'Session #' + ${s.id} + '  (' + ${s.status} + ')'"
+                        th:selected="${selectedSessionId != null and selectedSessionId == s.id}">
+                </option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-outline-dark w-100" type="submit">
+                <i class="fa-solid fa-magnifying-glass"></i> Load Activity
+            </button>
+        </div>
+    </form>
+
+    <!-- ─── Chart + Profile panel ─────────────────────────────────────── -->
+    <div th:if="${activity}">
+
+        <!-- KPI summary row -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="rv-card text-center">
+                    <div class="rv-mono fw-bold" style="color:var(--rv-cyan);font-size:2rem;"
+                         th:text="${activity.totalVotes}">0</div>
+                    <small class="text-muted">Total Votes Cast</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="rv-card text-center">
+                    <div class="rv-mono fw-bold" style="font-size:2rem;"
+                         th:style="'font-size:2rem;' + (${activity.totalRejected > 0} ? 'color:#ff5c72' : 'color:var(--rv-cyan)')"
+                         th:text="${activity.totalRejected}">0</div>
+                    <small class="text-muted">Vote Rejections</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="rv-card text-center">
+                    <div class="rv-mono fw-bold" style="color:var(--rv-cyan);font-size:2rem;"
+                         th:text="${activity.contestantStats.size()}">0</div>
+                    <small class="text-muted">Contestants</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+
+            <!-- Highcharts column chart -->
+            <div class="col-lg-8">
+                <div class="rv-card" style="min-height:380px">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="rv-page-title mb-0">
+                            <i class="fa-solid fa-chart-column"></i> Votes per Contestant
+                        </h5>
+                        <div class="d-flex gap-3" style="font-size:.75rem;">
+                            <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#00e5ff;margin-right:4px;"></span>Active</span>
+                            <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#ffc857;margin-right:4px;"></span>At-Risk</span>
+                            <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#ff5c72;margin-right:4px;"></span>Flagged</span>
+                        </div>
+                    </div>
+                    <div id="activityChart" style="height:300px;"></div>
+                    <p class="text-muted small mt-2 mb-0">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Click any bar to view that contestant's compliance profile.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Profile card panel — shown on bar click -->
+            <div class="col-lg-4">
+                <div class="rv-card h-100" id="profilePanel"
+                     style="min-height:380px;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+                    <!-- Default empty state -->
+                    <div id="profileEmpty" class="text-center text-muted py-4">
+                        <i class="fa-solid fa-arrow-left fa-2x mb-3" style="opacity:.3"></i>
+                        <p class="mb-0">Click a bar to view<br>contestant profile</p>
+                    </div>
+                    <!-- Populated by JS on bar click -->
+                    <div id="profileContent" style="display:none;width:100%">
+                        <div class="text-center mb-3">
+                            <div class="rv-mono fw-bold" id="pc-name"
+                                 style="font-size:1.1rem;color:var(--rv-cyan)"></div>
+                            <span id="pc-status-badge" class="status-badge mt-1"></span>
+                        </div>
+                        <table class="table table-sm mb-3" style="font-size:.82rem;">
+                            <tbody>
+                            <tr>
+                                <th style="color:var(--rv-text-muted);width:90px">Contestant ID</th>
+                                <td class="rv-mono" id="pc-id"></td>
+                            </tr>
+                            <tr>
+                                <th style="color:var(--rv-text-muted)">Talent</th>
+                                <td id="pc-talent"></td>
+                            </tr>
+                            <tr>
+                                <th style="color:var(--rv-text-muted)">Hometown</th>
+                                <td id="pc-town"></td>
+                            </tr>
+                            <tr>
+                                <th style="color:var(--rv-text-muted)">Vote Count</th>
+                                <td class="rv-mono fw-bold" id="pc-votes" style="color:var(--rv-cyan)"></td>
+                            </tr>
+                            <tr id="pc-flagged-row" style="display:none">
+                                <th style="color:var(--rv-text-muted)">Anomaly</th>
+                                <td><span class="status-badge status-ELIMINATED">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Flagged
+                                </span></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div class="mb-3">
+                            <div class="text-muted small mb-1">Biography</div>
+                            <div id="pc-bio" style="font-size:.8rem;line-height:1.5;
+                                 max-height:100px;overflow-y:auto;color:#ccc;"></div>
+                        </div>
+                        <div class="d-grid">
+                            <a id="pc-link" href="#" class="btn btn-sm btn-outline-dark">
+                                <i class="fa-solid fa-clock-rotate-left"></i> Audit History
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /row -->
+
+        <!-- Quick-action row beneath chart -->
+        <div class="d-flex gap-2 mt-3 justify-content-end">
+            <a class="btn btn-sm btn-outline-dark"
+               th:href="@{/compliance/anomalies(sessionId=${activity.sessionId})}">
+                <i class="fa-solid fa-bug"></i> Anomaly Detection
+            </a>
+            <a class="btn btn-sm btn-outline-dark"
+               th:href="@{/compliance/verify/{id}(id=${activity.sessionId})}">
+                <i class="fa-solid fa-check-double"></i> Verify Integrity
+            </a>
+            <a class="btn btn-sm btn-accent"
+               th:href="@{/compliance/reports/{id}(id=${activity.sessionId})}">
+                <i class="fa-solid fa-file-alt"></i> Full Report
+            </a>
+        </div>
+
+    </div><!-- /th:if activity -->
+
+</div><!-- /rv-page -->
+
+<!-- ── Highcharts ────────────────────────────────────────────────────────── -->
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script th:if="${chartDataJson}" th:inline="javascript">
+/*<![CDATA[*/
+
+// Chart data embedded server-side — each point carries the contestant's
+// database id so the click handler never needs to parse label text.
+const CHART_DATA = /*[[${chartDataJson}]]*/ [];
+
+// ── Bar color encoding ────────────────────────────────────────────────────
+// Computed in ContestantVoteStat.barColor() on the server and passed through.
+// teal (#00e5ff)  = ACTIVE / WINNER
+// amber (#ffc857) = ELIMINATED / WITHDRAWN
+// red   (#ff5c72) = flagged by anomaly detection
+
+// ── Profile card logic ────────────────────────────────────────────────────
+const STATUS_LABELS = {
+    ACTIVE: { text: 'Active', cls: 'status-ACTIVE' },
+    ELIMINATED: { text: 'Eliminated', cls: 'status-ELIMINATED' },
+    WITHDRAWN: { text: 'Withdrawn', cls: 'status-ARCHIVED' },
+    WINNER: { text: 'Winner', cls: 'status-ACTIVE' }
+};
+
+function openProfile(point) {
+    const empty   = document.getElementById('profileEmpty');
+    const content = document.getElementById('profileContent');
+
+    document.getElementById('pc-name').textContent   = point.name;
+    document.getElementById('pc-id').textContent     = '#' + point.id;
+    document.getElementById('pc-talent').textContent = point.talent || '—';
+    document.getElementById('pc-town').textContent   = point.town   || '—';
+    document.getElementById('pc-votes').textContent  = point.y.toLocaleString();
+    document.getElementById('pc-bio').textContent    = point.bio    || '—';
+    // Audit entity history — accessible to COMPLIANCE_OFFICER.
+    // Administrators can also navigate to /staff/contestants/{id} directly.
+    document.getElementById('pc-link').href =
+        '/compliance/audit-logs/entity/Contestant/' + point.id;
+
+    // Status badge
+    const badge = document.getElementById('pc-status-badge');
+    const s     = STATUS_LABELS[point.status] || { text: point.status, cls: '' };
+    badge.textContent = s.text;
+    badge.className   = 'status-badge ' + s.cls;
+
+    // Anomaly flag row
+    const flagRow = document.getElementById('pc-flagged-row');
+    flagRow.style.display = point.flagged ? '' : 'none';
+
+    empty.style.display   = 'none';
+    content.style.display = 'block';
+
+    // Pulse animation on the panel to signal update
+    const panel = document.getElementById('profilePanel');
+    panel.style.transition = 'box-shadow .2s';
+    panel.style.boxShadow  = '0 0 0 2px ' + point.color;
+    setTimeout(() => { panel.style.boxShadow = ''; }, 600);
+}
+
+// ── Highcharts configuration ──────────────────────────────────────────────
+Highcharts.chart('activityChart', {
+    chart: {
+        type: 'column',
+        backgroundColor: 'transparent',
+        style: { fontFamily: "'Courier New', monospace" }
+    },
+    title: { text: '' },
+    credits: { enabled: false },
+    legend: { enabled: false },
+    xAxis: {
+        type: 'category',
+        labels: {
+            style: { color: '#9ba3b0', fontSize: '11px' },
+            // Truncate long names to keep axis readable
+            formatter: function () {
+                return this.value.length > 12 ? this.value.substring(0, 12) + '…' : this.value;
+            }
+        },
+        lineColor: '#2d3140',
+        tickColor: '#2d3140'
+    },
+    yAxis: {
+        title: { text: 'Votes', style: { color: '#9ba3b0' } },
+        labels: { style: { color: '#9ba3b0' } },
+        gridLineColor: '#1e2130',
+        allowDecimals: false,
+        min: 0
+    },
+    tooltip: {
+        backgroundColor: '#1a1c22',
+        borderColor: '#00e5ff',
+        style: { color: '#e4e7ef' },
+        formatter: function () {
+            const p = this.point;
+            let tip = '<b>' + p.name + '</b><br/>' +
+                      'Votes: <b>' + Highcharts.numberFormat(p.y, 0) + '</b><br/>' +
+                      'Status: ' + p.status;
+            if (p.flagged) tip += '<br/><span style="color:#ff5c72">⚠ Anomaly flagged</span>';
+            return tip;
+        }
+    },
+    plotOptions: {
+        column: {
+            borderRadius: 4,
+            borderWidth: 0,
+            cursor: 'pointer',
+            point: {
+                events: {
+                    // Each data point carries the contestant's id — the click
+                    // handler uses that id directly, never the axis label text.
+                    click: function () { openProfile(this); }
+                }
+            },
+            states: {
+                hover: { brightness: 0.15 }
+            }
+        }
+    },
+    series: [{
+        name: 'Votes',
+        colorByPoint: true,
+        data: CHART_DATA
+    }]
+});
+
+/*]]>*/
+</script>
+
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Score Episode')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:900px">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="rv-page-title">
+            <i class="fa-solid fa-star-half-stroke"></i>
+            <span th:if="${episode != null}" th:text="'Ep. ' + ${episode.episodeNumber} + ' — ' + ${episode.title}"></span>
+        </h2>
+        <a class="btn btn-outline-secondary" th:href="@{/judge/scores}">&larr; Back to My Episodes</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <div class="alert alert-warning" th:if="${episode != null and !episode.judgingOpen}">
+        <i class="fa-solid fa-lock"></i> The judging window for this episode is currently closed.
+        You can review existing scores below, but new submissions or revisions aren't allowed until
+        an administrator opens the window.
+    </div>
+
+    <div class="rv-card text-center py-5" th:if="${#lists.isEmpty(contestants)}">
+        <p class="text-muted mb-0">No contestants are available to score for this episode yet.</p>
+    </div>
+
+    <div class="row g-3" th:unless="${#lists.isEmpty(contestants)}">
+        <div class="col-md-6" th:each="c : ${contestants}">
+            <div class="show-card h-100">
+                <div class="d-flex gap-3 mb-2">
+                    <img th:if="${c.photoPath}" th:src="@{'/uploads/' + ${c.photoPath}}"
+                         style="width:56px;height:56px;object-fit:cover;border-radius:12px" alt="">
+                    <div th:unless="${c.photoPath}"
+                         style="width:56px;height:56px;border-radius:12px;background:#ece9f7;display:flex;align-items:center;justify-content:center">
+                        <i class="fa-solid fa-user" style="color:#5a5e6a"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1" th:text="${c.fullName}">Name</h6>
+                        <small class="text-muted" th:text="${c.talentCategory}"></small>
+                    </div>
+                </div>
+
+                <form method="post" th:action="@{'/judge/scores/episodes/' + ${episodeId} + '/contestants/' + ${c.id}}">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-5">
+                            <label class="form-label mb-1 small">Score (0–100)</label>
+                            <input type="number" name="scoreValue" min="0" max="100" class="form-control" required
+                                   th:value="${existingScores.get(c.id) != null ? existingScores.get(c.id).scoreValue : null}">
+                        </div>
+                        <div class="col-7">
+                            <label class="form-label mb-1 small">Remarks (optional)</label>
+                            <input type="text" name="remarks" class="form-control"
+                                   th:value="${existingScores.get(c.id) != null ? existingScores.get(c.id).remarks : ''}">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-accent w-100 mt-2"
+                            th:disabled="${episode != null and !episode.judgingOpen}"
+                            th:text="${existingScores.get(c.id) != null} ? 'Revise Score' : 'Submit Score'"></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

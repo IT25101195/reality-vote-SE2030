@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:1000px">
+    <h2 class="rv-page-title mb-4"><i class="fa-solid fa-chart-line"></i> Reports Dashboard</h2>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold" style="color:var(--rv-navy); font-size:2.4rem;" th:text="${stats.totalShows}">0</div>
+                <small class="text-muted">Active Shows</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold" style="color:var(--rv-navy); font-size:2.4rem;" th:text="${stats.totalContestants}">0</div>
+                <small class="text-muted">Contestants</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold" style="color:var(--rv-navy); font-size:2.4rem;" th:text="${stats.openSessions}">0</div>
+                <small class="text-muted">Open Voting Sessions</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold" style="color:var(--rv-accent); font-size:2.4rem;" th:text="${stats.totalVotes}">0</div>
+                <small class="text-muted">Total Votes Cast</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold" style="color:var(--rv-accent); font-size:2.4rem;" th:text="${stats.totalVoters}">0</div>
+                <small class="text-muted">Unique Voters</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rv-card text-center">
+                <div class="rv-mono fw-bold" th:text="${stats.flaggedSecurityEvents}"
+                     th:style="'font-size:2.4rem;' + (${stats.flaggedSecurityEvents > 0} ? 'color:#d1442f' : 'color:var(--rv-navy)')">0</div>
+                <small class="text-muted">Flagged Security Events</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="rv-card">
+        <h5 class="rv-page-title mb-3">Jump to Contestant Rankings</h5>
+        <div class="d-flex flex-wrap gap-2">
+            <a th:each="s : ${shows}" class="btn btn-sm btn-outline-dark"
+               th:href="@{/reports/rankings(showId=${s.id})}" th:text="${s.name}"></a>
+            <span class="text-muted" th:if="${#lists.isEmpty(shows)}">No shows yet.</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

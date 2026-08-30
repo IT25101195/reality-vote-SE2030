@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Support Tickets')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:700px">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="rv-page-title"><i class="fa-solid fa-headset"></i> My Support Tickets</h2>
+        <a class="btn btn-accent" th:href="@{/support/tickets/new}"><i class="fa-solid fa-plus"></i> New Ticket</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <div class="rv-card text-center py-5" th:if="${#lists.isEmpty(tickets)}">
+        <p class="text-muted mb-0">You haven't submitted any support tickets yet.</p>
+    </div>
+
+    <div th:each="t : ${tickets}" class="show-card d-flex justify-content-between align-items-center">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-semibold" th:text="${t.reference}">TCK-000001</span>
+                <span class="status-badge" th:classappend="'status-' + ${t.status}" th:text="${t.status}"></span>
+            </div>
+            <div th:text="${t.subject}">Subject</div>
+            <small class="text-muted" th:text="${t.createdDate}"></small>
+        </div>
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{'/support/tickets/' + ${t.id}}">View</a>
+    </div>
+</div>
+</body>
+</html>

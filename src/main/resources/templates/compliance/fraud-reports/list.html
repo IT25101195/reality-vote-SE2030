@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Fraud Reports')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="rv-page" style="max-width:1100px">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <a th:href="@{/compliance/dashboard}" class="btn btn-sm btn-outline-dark">
+                <i class="fa-solid fa-arrow-left"></i> Dashboard
+            </a>
+            <h2 class="rv-page-title mb-0">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> Fraud Reports
+            </h2>
+        </div>
+    </div>
+
+    <div class="alert alert-info" th:if="${flash}" th:text="${flash}"></div>
+
+    <div class="rv-card text-center py-5" th:if="${#lists.isEmpty(reports)}">
+        <i class="fa-solid fa-magnifying-glass fa-2x mb-3" style="color:#00e5ff;opacity:.4"></i>
+        <p class="text-muted mb-0">No fraud reports have been filed yet.</p>
+        <p class="text-muted small mt-1">
+            Run Anomaly Detection on a session, then click "Save as Fraud Report".
+        </p>
+    </div>
+
+    <div class="rv-card p-0" th:unless="${#lists.isEmpty(reports)}">
+        <table class="table mb-0">
+            <thead>
+            <tr>
+                <th>#</th><th>Session</th><th>Status</th>
+                <th>Flagged Events</th><th>Raised by</th><th>Date</th><th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${reports}">
+                <td class="rv-mono text-muted small" th:text="${r.id}"></td>
+                <td th:text="${r.sessionDescription}"></td>
+                <td>
+                    <span class="status-badge"
+                          th:classappend="${r.status.name() == 'DRAFT'} ? 'status-ARCHIVED' : (${r.status.name() == 'FILED' or r.status.name() == 'UNDER_REVIEW'} ? 'status-SCHEDULED' : 'status-ACTIVE')"
+                          th:text="${r.status}"></span>
+                </td>
+                <td class="rv-mono" th:text="${r.totalFlaggedEvents}"></td>
+                <td class="small text-muted" th:text="${r.raisedByEmail}"></td>
+                <td class="small text-muted" th:text="${r.createdDate}"></td>
+                <td>
+                    <a class="btn btn-sm btn-outline-dark"
+                       th:href="@{/compliance/fraud-reports/{id}(id=${r.id})}">
+                        <i class="fa-solid fa-eye"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

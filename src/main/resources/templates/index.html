@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Home')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="on-air-strip"><span class="dot"></span> Live voting system &middot; SE2030 Group Project</div>
+
+<section class="rv-hero rv-hero-photo">
+    <div class="rv-hero-media" style="background-image:url('/img/hero-crowd.png')"></div>
+    <div class="rv-hero-scrim"></div>
+
+    <div class="rv-hero-inner">
+        <div class="rv-hero-eyebrow rv-mono"><span class="rv-hero-eyebrow-dot"></span> System Online</div>
+        <h1>Reality<span>Vote</span></h1>
+        <p>The high-stakes voting system for live broadcast events. Cast the ballot, crown the winner.</p>
+
+        <div class="rv-hero-cta">
+            <a class="btn btn-accent btn-lg" sec:authorize="isAuthenticated()" th:href="@{/profile}">
+                <i class="fa-solid fa-gauge-high"></i> Launch Dashboard
+            </a>
+            <a class="btn btn-accent btn-lg" sec:authorize="!isAuthenticated()" th:href="@{/login}">
+                <i class="fa-solid fa-gauge-high"></i> Launch Dashboard
+            </a>
+            <a class="btn btn-outline-hero btn-lg" href="#access">
+                <i class="fa-solid fa-chart-line"></i> View Live Results
+            </a>
+        </div>
+    </div>
+</section>
+
+<div class="rv-page">
+
+    <!-- Feature strip -->
+    <div class="row g-3 mb-2">
+        <div class="col-md-4">
+            <div class="rv-card rv-feature-card">
+                <div class="rv-feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <h3 class="rv-feature-title">Live Audit Trail</h3>
+                <p class="text-muted mb-0">Real-time verification of every vote cast. Immutable logs keep the integrity of your broadcast event beyond question.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rv-card rv-feature-card">
+                <div class="rv-feature-icon"><i class="fa-solid fa-gavel"></i></div>
+                <h3 class="rv-feature-title">Judge &amp; Panel Scoring</h3>
+                <p class="text-muted mb-0">Structured judging windows, weighted panels, and combined audience/judge tallies engineered for broadcast-grade stability.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rv-card rv-feature-card">
+                <div class="rv-feature-icon"><i class="fa-solid fa-chart-simple"></i></div>
+                <h3 class="rv-feature-title">Real-Time Visualization</h3>
+                <p class="text-muted mb-0">Dynamic results ready for on-screen graphics &mdash; live vote bars and rankings the moment the polls close.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="access" class="pt-4">
+        <div sec:authorize="isAuthenticated()" class="rv-card mb-4 mx-auto text-center" style="max-width:560px">
+            <p class="mb-3">You're signed in. Use the navigation bar above for the tools available to your role.</p>
+            <a th:href="@{/faq}" class="btn btn-sm btn-outline-dark">Browse Help / FAQ</a>
+        </div>
+
+        <div sec:authorize="!isAuthenticated()" class="pass-card mx-auto" style="max-width:560px">
+            <div class="pass-strip"></div>
+            <div class="pass-body">
+                <div class="pass-label"><i class="fa-solid fa-id-badge"></i> Backstage Access</div>
+                <h5 class="rv-display mb-3" style="font-size:1.4rem; letter-spacing:.04em;">Demo Accounts — One Per Role</h5>
+                <table class="table table-sm table-dark table-borderless mb-0" style="font-size:.88rem;">
+                    <thead style="color:var(--rv-cyan);"><tr><th>Role</th><th>Email</th><th>Password</th></tr></thead>
+                    <tbody class="rv-mono" style="font-size:.8rem; color:rgba(255,255,255,.85);">
+                    <tr><td class="fw-semibold" style="font-family:'Inter',sans-serif;">Administrator</td><td>admin@realityvote.lk</td><td>Admin@123</td></tr>
+                    <tr><td class="fw-semibold" style="font-family:'Inter',sans-serif;">Contestant Staff</td><td>staff@realityvote.lk</td><td>Staff@123</td></tr>
+                    <tr><td class="fw-semibold" style="font-family:'Inter',sans-serif;">Viewer</td><td>viewer@realityvote.lk</td><td>Viewer@123</td></tr>
+                    <tr><td class="fw-semibold" style="font-family:'Inter',sans-serif;">Compliance Officer</td><td>compliance@realityvote.lk</td><td>Compliance@123</td></tr>
+                    <tr><td class="fw-semibold" style="font-family:'Inter',sans-serif;">Reporting Manager</td><td>reports@realityvote.lk</td><td>Reports@123</td></tr>
+                    <tr><td class="fw-semibold" style="font-family:'Inter',sans-serif;">Support Staff</td><td>support@realityvote.lk</td><td>Support@123</td></tr>
+                    <tr><td class="fw-semibold" style="font-family:'Inter',sans-serif;">Judge</td><td>judge@realityvote.lk</td><td>Judge@123</td></tr>
+                    </tbody>
+                </table>
+                <a class="btn btn-accent w-100 mt-4" th:href="@{/login}"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+                <a class="btn btn-sm btn-outline-light w-100 mt-2" th:href="@{/register}"><i class="fa-solid fa-user-plus"></i> New voter? Create an account</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Anomaly Detection')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="rv-page" style="max-width:900px">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a th:href="@{/compliance/dashboard}" class="btn btn-sm btn-outline-dark">
+            <i class="fa-solid fa-arrow-left"></i> Dashboard
+        </a>
+        <h2 class="rv-page-title mb-0"><i class="fa-solid fa-bug"></i> Anomaly Detection</h2>
+    </div>
+
+    <!-- Session selector -->
+    <form class="rv-card mb-4 row g-2 align-items-end" method="get" th:action="@{/compliance/anomalies}">
+        <div class="col-md-8">
+            <label class="form-label mb-1">Select Voting Session</label>
+            <select name="sessionId" class="form-select">
+                <option value="">— Choose a session —</option>
+                <option th:each="s : ${sessions}"
+                        th:value="${s.id}"
+                        th:text="'Session #' + ${s.id} + '  (' + ${s.status} + ')'"
+                        th:selected="${selectedSessionId != null and selectedSessionId == s.id}"></option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-outline-dark w-100" type="submit">
+                <i class="fa-solid fa-magnifying-glass"></i> Detect Anomalies
+            </button>
+        </div>
+    </form>
+
+    <div th:if="${anomalyReport}">
+        <div class="rv-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="rv-page-title mb-0"><i class="fa-solid fa-triangle-exclamation"></i> Results</h5>
+                <span class="status-badge"
+                      th:classappend="${anomalyReport.totalFlaggedEvents > 0} ? 'status-ELIMINATED' : 'status-ACTIVE'"
+                      th:text="${anomalyReport.totalFlaggedEvents > 0} ? ${anomalyReport.totalFlaggedEvents} + ' Flagged Events' : 'No Anomalies'">
+                </span>
+            </div>
+
+            <div class="text-muted mb-3" th:if="${anomalyReport.anomalyDescriptions.isEmpty()}">
+                No anomalies detected for this session.
+            </div>
+
+            <ul class="list-group list-group-flush" th:unless="${anomalyReport.anomalyDescriptions.isEmpty()}">
+                <li class="list-group-item bg-transparent" th:each="desc : ${anomalyReport.anomalyDescriptions}"
+                    style="border-color:var(--rv-border);">
+                    <i class="fa-solid fa-circle-dot text-warning me-2"></i>
+                    <span th:text="${desc}"></span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="rv-card" th:unless="${anomalyReport.topSuspiciousActors.isEmpty()}">
+            <h5 class="rv-page-title mb-3"><i class="fa-solid fa-user-secret"></i> Suspicious Actors</h5>
+            <div class="d-flex flex-wrap gap-2">
+                <a th:each="actor : ${anomalyReport.topSuspiciousActors}"
+                   class="btn btn-sm btn-outline-danger"
+                   th:href="@{/compliance/audit-logs(keyword=${actor})}"
+                   th:text="${actor}"></a>
+            </div>
+            <p class="text-muted small mt-2 mb-0">Click an actor to view their full audit log.</p>
+        </div>
+
+        <div class="d-flex gap-2 mt-3 flex-wrap">
+            <!-- Save the current detection result as a persisted FraudReport (DRAFT) -->
+            <form method="post" th:action="@{/compliance/fraud-reports}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" name="sessionId" th:value="${anomalyReport.sessionId}">
+                <button class="btn btn-accent" type="submit">
+                    <i class="fa-solid fa-floppy-disk"></i> Save as Fraud Report
+                </button>
+            </form>
+            <!-- Raise a security alert pre-filled with this session -->
+            <a class="btn btn-sm btn-outline-dark"
+               th:href="@{/compliance/alerts/new(sessionId=${anomalyReport.sessionId})}">
+                <i class="fa-solid fa-bell-exclamation"></i> Raise Alert
+            </a>
+            <a class="btn btn-sm btn-outline-dark"
+               th:href="@{/compliance/reports/{id}(id=${anomalyReport.sessionId})}">
+                <i class="fa-solid fa-file-alt"></i> Full Report
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
